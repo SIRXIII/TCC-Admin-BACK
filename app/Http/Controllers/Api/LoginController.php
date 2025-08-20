@@ -23,7 +23,7 @@ class LoginController extends Controller
      */
     public function login(Request $request)
     {
-        // Validate the request
+        
         $validator = Validator::make($request->all(), [
             'email' => 'required|email',
             'password' => 'required',
@@ -33,7 +33,6 @@ class LoginController extends Controller
             return $this->error('Validation failed', $validator->errors(), 422);
         }
 
-        // Attempt to authenticate the user
         $credentials = $request->only('email', 'password');
 
         if (Auth::attempt($credentials)) {
