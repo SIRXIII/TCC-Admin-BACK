@@ -70,4 +70,25 @@ class TravelerController extends Controller
         $travelers = Traveler::whereIn('id', $request->ids)->get();
         return Excel::download(new TravelersExport($travelers), 'travelers (' . now()->format('Y-m-d H-i-s') . ').csv',\Maatwebsite\Excel\Excel::CSV);
     }
+
+    public function destroy($id)
+    {
+        $traveler = Traveler::find($id);
+
+        if (!$traveler) {
+
+
+            return $this->error('Traveler not found ', 404);
+        }
+
+        $traveler->delete();
+
+        // return response()->json([
+        //     'success' => true,
+        //     'message' => 'Traveler deleted successfully'
+        // ]);
+            return $this->success(null, 'Traveler deleted successfully', 200);
+
+    }
+
 }

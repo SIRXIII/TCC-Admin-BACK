@@ -14,16 +14,19 @@ return new class extends Migration
         Schema::create('partners', function (Blueprint $table) {
             $table->id();
             $table->string('profile_photo')->nullable();
-            $table->string('first_name')->nullable();
-            $table->string('last_name')->nullable();
+            $table->string('name')->nullable();
             $table->string('email')->nullable();
             $table->string('phone')->nullable();
             $table->string('category')->nullable();
             $table->string('location')->nullable();
-            $table->json('documents')->nullable();
+            $table->string('address')->nullable();
+            $table->string('store_available_days')->nullable();
+            $table->string('store_available_time')->nullable();
+            $table->string('tax_id')->nullable();
+            $table->string('business_name')->nullable();
             $table->string('username')->nullable();
             $table->string('password')->nullable();
-            $table->enum('status', ['active', 'suspended'])->default('active');
+            $table->enum('status', ['active', 'suspended', 'pending'])->default('pending');
             $table->float('average_rating', 3, 2)->default(0.00);
             $table->softDeletes();
             $table->timestamps();

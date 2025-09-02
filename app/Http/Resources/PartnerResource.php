@@ -4,6 +4,7 @@ namespace App\Http\Resources;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Support\Str;
 
 class PartnerResource extends JsonResource
 {
@@ -17,20 +18,39 @@ class PartnerResource extends JsonResource
         return [
             'id' => $this->id,
             'profile_photo' => $this->profile_photo,
-            'first_name' => $this->first_name,
-            'last_name' => $this->last_name,
+            'business_name' => $this->business_name,
+            'name' => $this->name,
             'email' => $this->email,
             'phone' => $this->phone,
             'category' => $this->category,
             'location' => $this->location,
-            'documents' => $this->documents,
+            'address' => $this->address,
             'username' => $this->username,
-            'status' => $this->status,
+            'store_available_days' => $this->store_available_days,
+            'store_available_time' => $this->store_available_time,
+            'tax_id' => $this->tax_id,
+            'status' => Str::ucfirst($this->status),
             'total_sales' => $this->total_sales ?? 0,
             'delivered_orders_count' => $this->delivered_orders_count  ?? 0,
             'rating' => $this->average_rating,
-            'created_at' => $this->created_at->toDateTimeString(),
+            'created_at' => $this->created_at->format('M D, Y'),
             'updated_at' => $this->updated_at->toDateTimeString(),
+            'products'  => ProductResource::collection($this->whenLoaded('products')),
+            'order' => OrderResource::collection($this->whenLoaded('orders')),
+            'documents' => [
+                'license' => $this->documents()->where('type', 'license')->get()->map(function ($doc) {
+                    return [
+                        'side' => $doc->side,
+                        'file_path' => url($doc->file_path),
+                    ];
+                }),
+                'owner_id_card' => $this->documents()->where('type', 'owner_id_card')->get()->map(function ($doc) {
+                    return [
+                        'side' => $doc->side,
+                        'file_path' => $doc->file_path,
+                    ];
+                }),
+            ],
         ];
     }
 }

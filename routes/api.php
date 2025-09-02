@@ -16,7 +16,7 @@ use Illuminate\Support\Facades\Route;
 
 Route::post('/login', [LoginController::class, 'login'])->middleware('throttle:6,1');
 
-// Route::middleware('auth:sanctum')->group(function () {
+Route::middleware('auth:sanctum')->group(function () {
 
     Route::post('logout', [LoginController::class, 'logout']);
 
@@ -32,16 +32,23 @@ Route::post('/login', [LoginController::class, 'login'])->middleware('throttle:6
     Route::get('/travelers/{id}', [TravelerController::class, 'show']);
     Route::post('/travelers/bulk-update', [TravelerController::class, 'bulkUpdate']);
     Route::post('/travelers/export', [TravelerController::class, 'export']);
+    Route::delete('/travelers/{id}', [TravelerController::class, 'destroy']);
 
 
 
     //Partners
     Route::get('/partners', [PartnerController::class, 'index']);
     Route::get('/partners/{id}', [PartnerController::class, 'show']);
+    Route::post('/partners/status-update', [PartnerController::class, 'statusUpdate']);
+    Route::post('/partners/request-information', [PartnerController::class, 'sendEmail']);
+    Route::post('/partner/store', [PartnerController::class, 'store']);
+    Route::get('/partners/{id}/documents/download', [PartnerController::class, 'downloadDocuments']);
+
+
 
     Route::apiResource('riders', RiderController::class);
     Route::get('riders/{rider}/ratings', [RatingController::class, 'index']);
 
 
 
-// });
+});
