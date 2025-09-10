@@ -49,4 +49,11 @@ class Traveler extends Model
     {
         return $this->hasMany(Order::class);
     }
+
+    public function getTotalAmountSpentAttribute()
+{
+    return $this->orders()
+        ->where('status', '!=', 'cancelled')
+        ->sum('total_price');
+}
 }

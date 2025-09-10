@@ -18,6 +18,9 @@ return new class extends Migration
             $table->unsignedBigInteger('rider_id')->nullable();
             $table->decimal('total_price', 10, 2)->default(0);
             $table->enum('status', ['pending', 'confirmed', 'shipped', 'delivered', 'cancelled'])->default('pending');
+            $table->dateTime('dispatch_time')->nullable();
+            $table->dateTime('delivery_time')->nullable();
+            $table->nullableMorphs('canceled_by');
             $table->foreign('partner_id')->references('id')->on('partners')->onDelete('cascade');
             $table->foreign('traveler_id')->references('id')->on('travelers')->onDelete('cascade');
             $table->foreign('rider_id')->references('id')->on('riders')->onDelete('set null');

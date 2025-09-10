@@ -23,11 +23,38 @@ class OrderFactory extends Factory
     public function definition(): array
     {
         return [
-            'partner_id'  => Partner::inRandomOrder()->first()->id ?? Partner::factory()->create()->id,
-            'traveler_id' => Traveler::inRandomOrder()->first()->id ?? Traveler::factory()->create()->id,
-            'rider_id'    => Rider::inRandomOrder()->first()->id ?? Rider::factory()->create()->id,
-            'total_price' => 0,
-            'status'      => $this->faker->randomElement(['pending','confirmed','shipped','delivered']),
+            'partner_id' => Partner::inRandomOrder()->first()->id ?? Partner::factory(),
+            'traveler_id' => Traveler::inRandomOrder()->first()->id ?? Traveler::factory(),
+            'rider_id' => $this->faker->boolean(80) // 80% chance to have rider
+                ? (Rider::inRandomOrder()->first()->id ?? Rider::factory())
+                : null,
+
+            'total_price' => $this->faker->randomFloat(2, 50, 5000),
+            'status' => $this->faker->randomElement(['pending', 'confirmed', 'shipped', 'delivered', 'cancelled']),
+            'dispatch_time' => $this->faker->dateTimeBetween('-2 days', 'now'),
+            'delivery_time' => $this->faker->optional()->dateTimeBetween('now', '+2 days'),
+
+
+            'canceled_by_id' => function (array $attributes) {
+                return $attributes['status'] === 'cancelled'
+                    ? $this->faker->randomElement([
+                        Partner::factory()->create()->id,
+                        Traveler::factory()->create()->id,
+                        Rider::factory()->create()->id,
+                    ])
+                    : null;
+            },
+            'canceled_by_type' => function (array $attributes) {
+                if ($attributes['status'] !== 'cancelled') {
+                    return null;
+                }
+
+                return $this->faker->randomElement([
+                    Partner::class,
+                    Traveler::class,
+                    Rider::class,
+                ]);
+            },
         ];
     }
 }

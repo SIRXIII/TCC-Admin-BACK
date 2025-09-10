@@ -31,7 +31,7 @@ class DashboardController extends Controller
                 ],
                 [
                     'label' => 'Active Riders',
-                    'value' => Rider::where('online', 1)->count(),
+                    'value' => Rider::where('status', 'online')->count(),
                 ],
                 [
                     'label' => 'Pending Orders',

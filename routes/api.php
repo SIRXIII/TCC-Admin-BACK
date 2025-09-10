@@ -16,7 +16,7 @@ use Illuminate\Support\Facades\Route;
 
 Route::post('/login', [LoginController::class, 'login'])->middleware('throttle:6,1');
 
-Route::middleware('auth:sanctum')->group(function () {
+// Route::middleware('auth:sanctum')->group(function () {
 
     Route::post('logout', [LoginController::class, 'logout']);
 
@@ -35,7 +35,6 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('/travelers/{id}', [TravelerController::class, 'destroy']);
 
 
-
     //Partners
     Route::get('/partners', [PartnerController::class, 'index']);
     Route::get('/partners/{id}', [PartnerController::class, 'show']);
@@ -45,10 +44,19 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/partners/{id}/documents/download', [PartnerController::class, 'downloadDocuments']);
 
 
-
+    // Riders
     Route::apiResource('riders', RiderController::class);
+    Route::get('/riders/{id}/documents/download', [RiderController::class, 'downloadDocuments']);
+    Route::post('/riders/status-update', [RiderController::class, 'statusUpdate']);
+    Route::post('/riders/store', [RiderController::class, 'store']);
+    Route::post('/riders/update/{id}', [RiderController::class, 'update']);
+
+
+
+
     Route::get('riders/{rider}/ratings', [RatingController::class, 'index']);
 
 
 
-});
+
+// });

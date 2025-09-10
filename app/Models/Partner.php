@@ -49,7 +49,7 @@ class Partner extends Model
 
     public function getAverageRatingAttribute()
     {
-        return number_format($this->ratings()->avg('rating') ?? 0, 1);
+        return $this->ratings()->avg('rating') ? round($this->ratings()->avg('rating'), 1) : null;
     }
 
     public function documents()

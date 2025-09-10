@@ -22,6 +22,7 @@ return new class extends Migration
             $table->string('care_method')->nullable();
             $table->string('weight')->nullable();
             $table->string('sku')->nullable();
+            $table->integer('stock')->nullable();
 
 
             $table->decimal('base_price', 10, 2)->nullable();

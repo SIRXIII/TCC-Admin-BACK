@@ -17,7 +17,7 @@ class PartnerResource extends JsonResource
     {
         return [
             'id' => $this->id,
-            'profile_photo' => $this->profile_photo,
+            'profile_photo' => url($this->profile_photo),
             'business_name' => $this->business_name,
             'name' => $this->name,
             'email' => $this->email,

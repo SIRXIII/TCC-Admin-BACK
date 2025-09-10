@@ -33,6 +33,7 @@ class TravelerResource extends JsonResource
             'updated_at' => $this->updated_at->toIso8601String(),
             'last_active' => $this->last_active?->diffForHumans(),
             'total_orders' => $this->orders_count,
+            'total_amount_spent' =>  $this->total_amount_spent,
             'order' => OrderResource::collection($this->whenLoaded('orders')),
         ];
     }

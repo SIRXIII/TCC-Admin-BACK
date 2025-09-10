@@ -17,11 +17,12 @@ class OrderResource extends JsonResource
         return [
             'id'            => $this->id,
             'traveler_name' => $this->traveler->name,
+            'traveler_photo' => $this->traveler->profile_photo,
             'partner_name' => $this->partner?->name,
             'partner_photo' => $this->partner->profile_photo,
             'items_count'   => $this->items->count(),
             'total_price'   => $this->total_price,
-            'status'        => $this->status,
+            'status'        => ucfirst($this->status),
             'created_at'    => $this->created_at->format('F d, Y'),
         ];
     }

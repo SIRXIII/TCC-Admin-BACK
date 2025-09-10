@@ -24,6 +24,7 @@ class ProductResource extends JsonResource
             'care_method'       => $this->care_method,
             'weight'            => $this->weight,
             'sku'               => $this->sku,
+            'stock'               => $this->stock,
             'base_price'        => $this->base_price,
             'deposit'           => $this->deposit,
             'late_fee'          => $this->late_fee,
