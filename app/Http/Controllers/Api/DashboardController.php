@@ -31,7 +31,7 @@ class DashboardController extends Controller
                 ],
                 [
                     'label' => 'Active Riders',
-                    'value' => Rider::where('status', 'online')->count(),
+                    'value' => Rider::where('status', 'active')->count(),
                 ],
                 [
                     'label' => 'Pending Orders',
@@ -53,7 +53,7 @@ class DashboardController extends Controller
     {
 
         try {
-            $travelers = Traveler::withCount('orders')->latest()->take(5)->get();
+            $travelers = Traveler::with('orders')->latest()->take(5)->get();
             return $this->success(TravelerResource::collection($travelers), 'Travelers overview');
         } catch (\Exception $e) {
             return $this->error('Failed to retrieve travelers: ' . $e->getMessage(), 500);

@@ -118,4 +118,6 @@ class Rider extends Model
         }
         return "Complete document is not uploaded";
     }
+
+    
 }

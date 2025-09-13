@@ -74,7 +74,7 @@ class PartnerController extends Controller
             'to' => 'required|email',
             'businessName' => 'required|string',
             'message' => 'required|string',
-            'deadline' => 'required|string',
+            'deadline' => 'nullable|string',
         ]);
 
         if ($validator->fails()) {

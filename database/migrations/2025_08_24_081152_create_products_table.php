@@ -18,21 +18,26 @@ return new class extends Migration
             $table->string('name')->nullable();
             $table->string('brand')->nullable();
             $table->string('color')->nullable();
+            $table->string('size')->nullable();
+            $table->string('category')->nullable();
+
             $table->string('material')->nullable();
             $table->string('care_method')->nullable();
             $table->string('weight')->nullable();
             $table->string('sku')->nullable();
-            $table->integer('stock')->nullable();
+            $table->integer('stock')->default(0);
+
+
+            $table->enum('type', ['rental', 'formal'])->default('rental');
+            $table->decimal('buy_price', 10, 2)->nullable();
+
 
 
             $table->decimal('base_price', 10, 2)->nullable();
             $table->decimal('deposit', 10, 2)->nullable();
             $table->decimal('late_fee', 10, 2)->nullable();
             $table->decimal('replacement_value', 10, 2)->nullable();
-            $table->decimal('buy_price', 10, 2)->nullable();
             $table->string('extensions')->nullable();
-
-
 
             $table->string('prep_buffer')->nullable();
             $table->string('min_rental')->nullable();
@@ -50,9 +55,13 @@ return new class extends Migration
 
 
             $table->string('condition_grade')->nullable();
-            $table->string('status')->nullable();
+            // $table->string('status')->nullable();
+            $table->enum('status', ['active', 'suspended', 'pending'])->default('pending');
+
             $table->text('note')->nullable();
-             $table->foreign('partner_id')->references('id')->on('partners')->onDelete('cascade');
+            $table->boolean('is_verified')->default(false)->nullable();
+            $table->foreign('partner_id')->references('id')->on('partners')->onDelete('cascade');
+
             $table->timestamps();
         });
     }

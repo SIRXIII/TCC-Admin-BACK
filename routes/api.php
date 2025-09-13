@@ -2,7 +2,9 @@
 
 use App\Http\Controllers\Api\DashboardController;
 use App\Http\Controllers\Api\LoginController;
+use App\Http\Controllers\Api\OrderController;
 use App\Http\Controllers\Api\PartnerController;
+use App\Http\Controllers\Api\ProductController;
 use App\Http\Controllers\Api\RatingController;
 use App\Http\Controllers\Api\RiderController;
 use App\Http\Controllers\Api\TravelerController;
@@ -50,13 +52,16 @@ Route::post('/login', [LoginController::class, 'login'])->middleware('throttle:6
     Route::post('/riders/status-update', [RiderController::class, 'statusUpdate']);
     Route::post('/riders/store', [RiderController::class, 'store']);
     Route::post('/riders/update/{id}', [RiderController::class, 'update']);
-
-
-
-
     Route::get('riders/{rider}/ratings', [RatingController::class, 'index']);
 
 
+    // Products
+    Route::apiResource('/products', ProductController::class);
+    Route::post('/products/status-update', [ProductController::class, 'statusUpdate']);
 
+
+    // Orders
+    Route::apiResource('/orders', OrderController::class);
+    Route::post('/orders/assign-rider', [OrderController::class, 'assignRider']);
 
 // });

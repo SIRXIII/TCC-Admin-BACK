@@ -22,15 +22,20 @@ class OrderFactory extends Factory
      */
     public function definition(): array
     {
+
+        $riderId = $this->faker->boolean(60)
+            ? (Rider::inRandomOrder()->first()->id ?? Rider::factory())
+            : null;
+
         return [
             'partner_id' => Partner::inRandomOrder()->first()->id ?? Partner::factory(),
             'traveler_id' => Traveler::inRandomOrder()->first()->id ?? Traveler::factory(),
-            'rider_id' => $this->faker->boolean(80) // 80% chance to have rider
-                ? (Rider::inRandomOrder()->first()->id ?? Rider::factory())
-                : null,
+            'rider_id' => $riderId,
 
             'total_price' => $this->faker->randomFloat(2, 50, 5000),
-            'status' => $this->faker->randomElement(['pending', 'confirmed', 'shipped', 'delivered', 'cancelled']),
+            'status' => $riderId
+                ? $this->faker->randomElement(['pending', 'approved', 'processing', 'shipped', 'delivered', 'cancelled', 'returned', 'refunded'])
+                : 'pending',
             'dispatch_time' => $this->faker->dateTimeBetween('-2 days', 'now'),
             'delivery_time' => $this->faker->optional()->dateTimeBetween('now', '+2 days'),
 

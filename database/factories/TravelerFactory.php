@@ -28,6 +28,7 @@ class TravelerFactory extends Factory
             'address' => $this->faker->streetAddress(),
             'spent_amount' => $this->faker->randomFloat(2, 0, 10000),
             'status' => $this->faker->randomElement(['active', 'suspended']),
+            'last_active' => $this->faker->dateTimeBetween('-1 month', 'now'),
             'created_at' => now(),
             'updated_at' => now(),
         ];

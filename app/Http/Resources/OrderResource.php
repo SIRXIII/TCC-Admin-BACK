@@ -24,6 +24,22 @@ class OrderResource extends JsonResource
             'total_price'   => $this->total_price,
             'status'        => ucfirst($this->status),
             'created_at'    => $this->created_at->format('F d, Y'),
+            'dispatch_time' => $this->dispatch_time,
+            'delivery_time' => $this->delivery_time,
+            'rider_name'    => $this->rider?->name,
+            'rider_photo'   => $this->rider?->profile_photo,
+            'complaints'    => $this->complaints?->count() ?? 0,
+            'items'         => OrderItemResource::collection($this->whenLoaded('items')),
+            'canceled_by'   => $this->when($this->status === 'cancelled', function () {
+                return $this->canceledBy ? [
+                    'type' => class_basename($this->canceledBy),
+                    'name' => $this->canceledBy->name,
+                ] : null;
+            }),
+            'partner'      => new PartnerResource($this->whenLoaded('partner')),
+            'traveler'     => new TravelerResource($this->whenLoaded('traveler')),
+            'rider'        => new RiderResource($this->whenLoaded('rider')),
+
         ];
     }
 }

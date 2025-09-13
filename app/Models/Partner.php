@@ -66,4 +66,37 @@ class Partner extends Model
     {
         return $this->documents()->where('type', 'owner_id_card');
     }
+
+    public function getPendingOrdersCountAttribute()
+    {
+        return $this->orders()->where('status', 'pending')->count();
+    }
+
+    public function getCancelledOrdersCountAttribute()
+    {
+        return $this->orders()->where('status', 'cancelled')->count();
+    }
+
+    public function getDeliveredOrdersCountAttribute()
+    {
+        return $this->orders()->where('status', 'delivered')->count();
+    }
+
+    public function getTotalSalesAttribute()
+    {
+        return $this->orders()
+            ->where('status', '!=', 'cancelled')
+            ->sum('total_price');
+    }
+
+    public function complaints()
+    {
+        return $this->morphMany(Complaint::class, 'complainable');
+    }
+
+
+    public function getReviewsCountAttribute()
+    {
+        return $this->ratings()->count();
+    }
 }

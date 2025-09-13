@@ -5,7 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
-
+use Illuminate\Database\Eloquent\Casts\Attribute;
 class Traveler extends Model
 {
     use SoftDeletes, HasFactory;
@@ -26,7 +26,7 @@ class Traveler extends Model
 
     protected $hidden = ['password'];
 
-     protected $casts = [
+    protected $casts = [
         'last_active' => 'datetime',
     ];
 
@@ -51,9 +51,20 @@ class Traveler extends Model
     }
 
     public function getTotalAmountSpentAttribute()
-{
-    return $this->orders()
-        ->where('status', '!=', 'cancelled')
-        ->sum('total_price');
-}
+    {
+        return $this->orders()
+            ->where('status', '!=', 'cancelled')
+            ->sum('total_price');
+    }
+
+    // protected function lastActive(): Attribute
+    // {
+    //     return Attribute::get(function () {
+    //         $lastOrder = $this->orders()->latest('created_at')->first();
+
+    //         return $lastOrder
+    //             ? $lastOrder->created_at->diffForHumans()
+    //             : 'No activity yet';
+    //     });
+    // }
 }
