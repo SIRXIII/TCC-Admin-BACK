@@ -4,7 +4,7 @@ namespace App\Http\Resources;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
-
+use Illuminate\Support\Str;
 class OrderResource extends JsonResource
 {
     /**
@@ -22,7 +22,7 @@ class OrderResource extends JsonResource
             'partner_photo' => $this->partner->profile_photo,
             'items_count'   => $this->items->count(),
             'total_price'   => $this->total_price,
-            'status'        => ucfirst($this->status),
+            'status'        => Str::ucfirst($this->status),
             'created_at'    => $this->created_at->format('F d, Y'),
             'dispatch_time' => $this->dispatch_time,
             'delivery_time' => $this->delivery_time,

@@ -57,6 +57,13 @@ class Traveler extends Model
             ->sum('total_price');
     }
 
+// In Partner.php, Traveler.php, Rider.php
+public function supportTickets()
+{
+    return $this->morphMany(SupportTicket::class, 'user');
+}
+
+
     // protected function lastActive(): Attribute
     // {
     //     return Attribute::get(function () {

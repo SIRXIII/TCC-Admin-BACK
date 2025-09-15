@@ -5,10 +5,12 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Laravel\Sanctum\HasApiTokens;
+use Illuminate\Foundation\Auth\User as Authenticatable;
 
-class Partner extends Model
+class Partner extends  Authenticatable
 {
-    use HasFactory, SoftDeletes;
+    use HasFactory, SoftDeletes, HasApiTokens;
 
     protected $fillable = [
 
@@ -99,4 +101,12 @@ class Partner extends Model
     {
         return $this->ratings()->count();
     }
+
+
+   // In Partner.php, Traveler.php, Rider.php
+public function supportTickets()
+{
+    return $this->morphMany(SupportTicket::class, 'user');
+}
+
 }

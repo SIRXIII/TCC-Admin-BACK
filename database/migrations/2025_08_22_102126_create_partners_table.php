@@ -28,6 +28,9 @@ return new class extends Migration
             $table->string('password')->nullable();
             $table->enum('status', ['active', 'suspended', 'pending'])->default('pending');
             $table->float('average_rating', 3, 2)->default(0.00);
+            $table->string('otp_code')->nullable();
+            $table->timestamp('otp_expires_at')->nullable();
+            $table->enum('two_factor_type', ['totp', 'email'])->nullable();
             $table->softDeletes();
             $table->timestamps();
         });

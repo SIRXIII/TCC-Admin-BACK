@@ -119,5 +119,12 @@ class Rider extends Model
         return "Complete document is not uploaded";
     }
 
-    
+
+public function supportTickets()
+{
+    return $this->morphMany(SupportTicket::class, 'user');
+}
+
+
+
 }

@@ -24,6 +24,7 @@ return new class extends Migration
             $table->string('spent_amount')->nullable();
             $table->enum('status', ['active','suspended'])->default('active');
             $table->timestamp('last_active')->nullable();
+            
             $table->softDeletes();
             $table->timestamps();
         });

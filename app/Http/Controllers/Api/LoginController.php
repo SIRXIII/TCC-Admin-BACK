@@ -3,12 +3,14 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\UserResource;
 use App\Models\User;
 use App\Trait\ApiResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\Rules;
 
 class LoginController extends Controller
 {
@@ -23,7 +25,7 @@ class LoginController extends Controller
      */
     public function login(Request $request)
     {
-        
+
         $validator = Validator::make($request->all(), [
             'email' => 'required|email',
             'password' => 'required',
@@ -40,8 +42,9 @@ class LoginController extends Controller
             $token = $user->createToken('auth_token')->plainTextToken;
 
             return $this->success([
-                'user' => $user,
+                'user' => new UserResource($user),
                 'token' => $token,
+                // 'type' => 'user',
             ], 'Login successful', 200);
         }
 
@@ -57,5 +60,69 @@ class LoginController extends Controller
         $request->user()->currentAccessToken()->delete();
 
         return $this->success(null, 'Logout successful', 200);
+    }
+
+
+    public function updateProfile(Request $request)
+    {
+
+        $validated = $request->validate([
+            'user_id'       => 'required|exists:users,id',
+            'first_name'     => 'required|string|max:255',
+            'last_name'      => 'nullable|string|max:255',
+            'email'         => 'required|email|unique:users,email,' . $request->user_id,
+            'phone'         => 'nullable|string|max:20',
+            'profile_photo' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+        ]);
+
+
+        $user = User::findOrFail($validated['user_id']);
+
+
+        $user->first_name = $validated['first_name'];
+        $user->last_name  = $validated['last_name'] ?? null;
+        $user->email      = $validated['email'];
+        $user->phone      = $validated['phone'] ?? null;
+
+
+        if ($request->hasFile('profile_photo')) {
+            $path = $request->file('profile_photo')->store('profile_images', 'public');
+            $user->profile_photo = $path;
+        }
+
+        $user->save();
+
+        return response()->json([
+            'status'  => 'success',
+            'message' => 'Profile updated successfully',
+            'user'    => new UserResource($user)
+        ]);
+    }
+
+
+    public function updatePassword(Request $request)
+    {
+        $validated = $request->validate([
+            'user_id'       => 'required|exists:users,id',
+            'oldpassword'   => 'required|string',
+            'newpassword'   => 'required|string|min:6',
+            'confirmpassword' => 'required|string|same:newpassword',
+        ]);
+
+        $user = User::findOrFail($validated['user_id']);
+
+
+        if (!Hash::check($validated['oldpassword'], $user->password)) {
+            return response()->json(['status' => 'error', 'message' => 'Old password is incorrect'], 422);
+        }
+
+        $user->password = Hash::make($validated['newpassword']);
+        $user->save();
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Password updated successfully',
+            'user' => new UserResource($user),
+        ]);
     }
 }

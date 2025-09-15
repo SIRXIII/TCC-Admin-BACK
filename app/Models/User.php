@@ -20,9 +20,16 @@ class User extends Authenticatable
      * @var list<string>
      */
     protected $fillable = [
-        'name',
+        'first_name',
+        'last_name',
+        'phone',
+        'profile_photo',
+
         'email',
         'password',
+        'otp_code',
+        'otp_expires_at',
+        'two_factor_type'
     ];
 
     /**
@@ -46,5 +53,16 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    public function getFullNameAttribute()
+    {
+        return trim("{$this->first_name} {$this->last_name}");
+    }
+
+
+    public function supportTickets()
+    {
+        return $this->morphMany(SupportTicket::class, 'user');
     }
 }
