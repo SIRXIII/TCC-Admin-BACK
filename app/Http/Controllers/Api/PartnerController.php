@@ -85,11 +85,11 @@ class PartnerController extends Controller
 
         try {
 
-            // Mail::to($data['to'])->send(new RequestInformationEmail(
-            //     $data['businessName'],
-            //     $data['message'],
-            //     $data['deadline']
-            // ));
+            Mail::to($data['to'])->send(new RequestInformationEmail(
+                $data['businessName'],
+                $data['message'],
+                $data['deadline']
+            ));
 
             return $this->success(null, 'Email sent successfully', 200);
         } catch (\Exception $e) {

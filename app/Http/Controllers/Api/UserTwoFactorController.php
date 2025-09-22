@@ -18,9 +18,9 @@ class UserTwoFactorController extends Controller
     {
         $user = $request->user();
 
-        // if ($user->two_factor_secret) {
-        //     return response()->json(['message' => '2FA already enabled'], 400);
-        // }
+        if ($user->two_factor_secret) {
+            return response()->json(['message' => '2FA already enabled'], 400);
+        }
 
         $secret = $provider->generateSecretKey();
 
@@ -77,7 +77,7 @@ class UserTwoFactorController extends Controller
 
         $user->update([
             'two_factor_method' => $request->method,
-            
+
         ]);
 
         return response()->json([

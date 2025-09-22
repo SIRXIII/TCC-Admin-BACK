@@ -56,7 +56,7 @@ class LoginController extends Controller
                 'two_factor_email_expires_at' => now()->addMinutes(10),
             ]);
 
-            // Mail::to($user->email)->send(new TwoFactorOtpMail($code));
+            Mail::to($user->email)->send(new TwoFactorOtpMail($code));
         }
 
         return $this->success([
