@@ -8,11 +8,15 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 use Spatie\Permission\Traits\HasRoles;
+use Laravel\Fortify\TwoFactorAuthenticatable;
+
 
 class User extends Authenticatable
 {
+
     /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasFactory, Notifiable, HasRoles, HasApiTokens;
+    use TwoFactorAuthenticatable;
 
     /**
      * The attributes that are mass assignable.
@@ -27,9 +31,10 @@ class User extends Authenticatable
 
         'email',
         'password',
-        'otp_code',
-        'otp_expires_at',
-        'two_factor_type'
+        'two_factor_method',
+        'two_factor_secret',
+        'two_factor_email_code',
+        'two_factor_email_expires_at'
     ];
 
     /**
@@ -52,6 +57,7 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'two_factor_email_expires_at' => 'datetime',
         ];
     }
 
@@ -64,5 +70,15 @@ class User extends Authenticatable
     public function supportTickets()
     {
         return $this->morphMany(SupportTicket::class, 'user');
+    }
+    public function forceGenerateRecoveryCodes()
+    {
+        $codes = collect(range(1, 8))->map(fn() => \Illuminate\Support\Str::random(10))->all();
+
+        $this->forceFill([
+            'two_factor_recovery_codes' => encrypt(json_encode($codes)),
+        ])->save();
+
+        return $codes;
     }
 }
