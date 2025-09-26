@@ -29,8 +29,9 @@ Route::post('/two-factor/verify', [AuthLoginController::class, 'verify']);
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/2fa/generate-totp', [UserTwoFactorController::class, 'generateTotp']);
-    Route::post('/2fa/totp/confirm', [UserTwoFactorController::class, 'confirmTotp']);
-    Route::post('/2fa/email/enable', [UserTwoFactorController::class, 'enableEmail']);
+    Route::post('/2fa/verify-recovery', [UserTwoFactorController::class, 'regenerateTotpQr']);
+    // Route::post('/2fa/totp/confirm', [UserTwoFactorController::class, 'confirmTotp']);
+    // Route::post('/2fa/email/enable', [UserTwoFactorController::class, 'enableEmail']);
     Route::post('/2fa/update', [UserTwoFactorController::class, 'updateTwoFactor']);
 });
 
