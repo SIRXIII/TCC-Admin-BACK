@@ -10,7 +10,6 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Validation\Rules;
 
 class LoginController extends Controller
 {
@@ -44,7 +43,7 @@ class LoginController extends Controller
             return $this->success([
                 'user' => new UserResource($user),
                 'token' => $token,
-                // 'type' => 'user',
+             
             ], 'Login successful', 200);
         }
 
