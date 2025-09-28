@@ -8,8 +8,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use PragmaRX\Google2FA\Google2FA;
 use Illuminate\Support\Str;
-use SimpleSoftwareIO\QrCode\Facades\QrCode;
-use SimpleSoftwareIO\QrCode\Generator;
+use Endroid\QrCode\QrCode;
+use Endroid\QrCode\Writer\SvgWriter;
 use Laravel\Fortify\TwoFactorAuthenticatable;
 use Laravel\Fortify\TwoFactorAuthenticationProvider;
 
@@ -38,9 +38,11 @@ class UserTwoFactorController extends Controller
             $secret
         );
 
-        $qrBinary = QrCode::size(250)
-            ->format('svg')
-            ->generate($qr_code_url);
+        $qrCode = new QrCode($qr_code_url);
+        $qrCode->setSize(250);
+        
+        $writer = new SvgWriter();
+        $qrBinary = $writer->write($qrCode)->getString();
 
         $qrBase64 = 'data:image/svg+xml;base64,' . base64_encode($qrBinary);
 
@@ -92,9 +94,11 @@ class UserTwoFactorController extends Controller
             $secret
         );
 
-        $qrBinary = QrCode::size(250)
-            ->format('svg')
-            ->generate($qr_code_url);
+        $qrCode = new QrCode($qr_code_url);
+        $qrCode->setSize(250);
+        
+        $writer = new SvgWriter();
+        $qrBinary = $writer->write($qrCode)->getString();
 
         $qrBase64 = 'data:image/svg+xml;base64,' . base64_encode($qrBinary);
 
