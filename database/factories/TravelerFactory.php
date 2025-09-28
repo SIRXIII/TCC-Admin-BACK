@@ -4,6 +4,7 @@ namespace Database\Factories;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\Hash;
+use Faker\Generator as Faker;
 
 /**
  * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Traveler>
@@ -17,18 +18,20 @@ class TravelerFactory extends Factory
      */
     public function definition(): array
     {
+        $faker = \Faker\Factory::create();
+        
         return [
             'profile_photo' => 'https://via.placeholder.com/200x200/cccccc/ffffff?text=Profile',
-            'name' => $this->faker->name(),
-            'username' => $this->faker->unique()->userName(),
-            'email' => $this->faker->unique()->safeEmail(),
+            'name' => $faker->name(),
+            'username' => $faker->unique()->userName(),
+            'email' => $faker->unique()->safeEmail(),
             'password' => Hash::make('password'),
-            'phone' => $this->faker->phoneNumber(),
-            'country' => $this->faker->country(),
-            'address' => $this->faker->streetAddress(),
-            'spent_amount' => $this->faker->randomFloat(2, 0, 10000),
-            'status' => $this->faker->randomElement(['active', 'suspended']),
-            'last_active' => $this->faker->dateTimeBetween('-1 month', 'now'),
+            'phone' => $faker->phoneNumber(),
+            'country' => $faker->country(),
+            'address' => $faker->streetAddress(),
+            'spent_amount' => $faker->randomFloat(2, 0, 10000),
+            'status' => $faker->randomElement(['active', 'suspended']),
+            'last_active' => $faker->dateTimeBetween('-1 month', 'now'),
             'created_at' => now(),
             'updated_at' => now(),
         ];
