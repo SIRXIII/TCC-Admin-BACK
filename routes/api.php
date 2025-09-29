@@ -11,6 +11,7 @@ use App\Http\Controllers\Api\ProductController;
 use App\Http\Controllers\Api\RatingController;
 use App\Http\Controllers\Api\RefundController;
 use App\Http\Controllers\Api\RiderController;
+use App\Http\Controllers\Api\SocialAuthController;
 use App\Http\Controllers\Api\SupportTicketController;
 use App\Http\Controllers\Api\TravelerController;
 use App\Http\Controllers\Api\UserTwoFactorController;
@@ -28,10 +29,20 @@ use Illuminate\Support\Facades\Route;
 Route::post('/login', [AuthLoginController::class, 'login'])->middleware('throttle:6,1');;
 Route::post('/two-factor/verify', [AuthLoginController::class, 'verify']);
 
+// Social Authentication Routes
+Route::get('/social/providers', [SocialAuthController::class, 'getProviders']);
+Route::get('/social/{provider}/redirect', [SocialAuthController::class, 'redirectToProvider']);
+Route::get('/social/{provider}/callback', [SocialAuthController::class, 'handleProviderCallback']);
+Route::post('/social/{provider}/token', [SocialAuthController::class, 'loginWithToken']);
+
+
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/2fa/generate-totp', [UserTwoFactorController::class, 'generateTotp']);
     Route::post('/2fa/verify-recovery', [UserTwoFactorController::class, 'regenerateTotpQr']);
     Route::post('/2fa/update', [UserTwoFactorController::class, 'updateTwoFactor']);
+
+     // Social Authentication (Authenticated Routes)
+    Route::post('/social/unlink', [SocialAuthController::class, 'unlinkSocialAccount']);
 });
 
 
