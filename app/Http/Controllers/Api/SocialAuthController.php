@@ -8,6 +8,7 @@ use App\Models\User;
 use App\Trait\ApiResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
 use Laravel\Socialite\Facades\Socialite;
 
@@ -18,15 +19,30 @@ class SocialAuthController extends Controller
     /**
      * Redirect to social provider
      */
-    public function redirectToProvider($provider)
+    public function redirectToProvider($provider, Request $request)
     {
         $this->validateProvider($provider);
 
         try {
-            $redirectUrl = Socialite::driver($provider)->redirect()->getTargetUrl();
+            // Generate a state parameter for security
+            $state = Str::random(40);
+            
+            // Store state in cache for verification (expires in 10 minutes)
+            Cache::put("social_state_{$state}", [
+                'provider' => $provider,
+                'created_at' => now()
+            ], now()->addMinutes(10));
+
+            // Use stateless mode for API with custom state
+            $redirectUrl = Socialite::driver($provider)
+                ->stateless()
+                ->with(['state' => $state])
+                ->redirect()
+                ->getTargetUrl();
             
             return $this->success([
-                'redirect_url' => $redirectUrl
+                'redirect_url' => $redirectUrl,
+                'state' => $state
             ], "Redirect to {$provider} authentication", 200);
         } catch (\Exception $e) {
             return $this->error("Failed to redirect to {$provider}", $e->getMessage(), 500);
@@ -41,8 +57,18 @@ class SocialAuthController extends Controller
         $this->validateProvider($provider);
 
         try {
-            // Get user from provider
-            $socialUser = Socialite::driver($provider)->user();
+            // Verify state parameter if provided
+            if ($request->has('state')) {
+                $stateData = Cache::get("social_state_{$request->state}");
+                if (!$stateData || $stateData['provider'] !== $provider) {
+                    return $this->error("Invalid state parameter", null, 422);
+                }
+                // Clean up used state
+                Cache::forget("social_state_{$request->state}");
+            }
+
+            // Get user from provider using stateless mode
+            $socialUser = Socialite::driver($provider)->stateless()->user();
             
             // Find or create user
             $user = $this->findOrCreateUser($socialUser, $provider);
