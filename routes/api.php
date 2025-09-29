@@ -4,6 +4,7 @@ use App\Http\Controllers\Api\Auth\LoginController as AuthLoginController;
 use App\Http\Controllers\Api\Auth\PartnerAuthController;
 use App\Http\Controllers\Api\DashboardController;
 use App\Http\Controllers\Api\LoginController;
+use App\Http\Controllers\Api\NotificationController;
 use App\Http\Controllers\Api\OrderController;
 use App\Http\Controllers\Api\PartnerController;
 use App\Http\Controllers\Api\ProductController;
@@ -30,8 +31,6 @@ Route::post('/two-factor/verify', [AuthLoginController::class, 'verify']);
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/2fa/generate-totp', [UserTwoFactorController::class, 'generateTotp']);
     Route::post('/2fa/verify-recovery', [UserTwoFactorController::class, 'regenerateTotpQr']);
-    // Route::post('/2fa/totp/confirm', [UserTwoFactorController::class, 'confirmTotp']);
-    // Route::post('/2fa/email/enable', [UserTwoFactorController::class, 'enableEmail']);
     Route::post('/2fa/update', [UserTwoFactorController::class, 'updateTwoFactor']);
 });
 
@@ -113,4 +112,11 @@ Route::prefix('partner')->group(function () {
         Route::get('/refunds', [RefundController::class, 'index']);
         Route::get('/support-tickets', [SupportTicketController::class, 'index']);
     });
+});
+
+
+Route::middleware('auth:sanctum')->group(function () {
+    Route::get('/notifications', [NotificationController::class, 'index']);
+    Route::post('/notifications/read-all', [NotificationController::class, 'markAllAsRead']);
+    Route::post('/notifications/{id}/read', [NotificationController::class, 'markAsRead']);
 });

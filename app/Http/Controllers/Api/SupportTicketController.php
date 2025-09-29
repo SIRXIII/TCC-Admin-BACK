@@ -10,6 +10,7 @@ use App\Models\Rider;
 use App\Models\SupportTicket;
 use App\Models\Traveler;
 use App\Models\User;
+use App\Notifications\GenericNotification;
 use App\Trait\ApiResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -95,6 +96,35 @@ class SupportTicketController extends Controller
             'user_type' => get_class($user),
         ]);
 
+        User::each(function ($admin) use ($ticket) {
+            $admin->notify(new GenericNotification(
+                'New Support Ticket',
+                "A new ticket #{$ticket->id} was created",
+                "/support/chatsupport/{$ticket->id}",
+                'ticket'
+            ));
+        });
+
+        if ($ticket->order) {
+            if ($ticket->order->traveler) {
+                $ticket->order->traveler->notify(new GenericNotification(
+                    'Support Ticket Created',
+                    "Ticket for order #{$ticket->order->id}",
+                    "/orders/{$ticket->order->id}",
+                    'ticket'
+                ));
+            }
+
+            if ($ticket->order->rider) {
+                $ticket->order->rider->notify(new GenericNotification(
+                    'Support Ticket Created',
+                    "Ticket for order #{$ticket->order->id}",
+                    "/orders/{$ticket->order->id}",
+                    'ticket'
+                ));
+            }
+        }
+
         return $this->success(
             new SupportTicketResource($ticket->load('order', 'user')),
             'Support ticket created successfully',
@@ -108,12 +138,11 @@ class SupportTicketController extends Controller
             'status' => 'required|in:In Progress,Rejected,Pending',
         ]);
 
-        // update ticket
         $ticket->update([
             'status' => $request->status,
         ]);
 
-        // reload ticket with relationships
+
         $ticket = SupportTicket::with(['messages.senderable', 'order', 'user'])
             ->find($ticket->id);
 

@@ -25,7 +25,7 @@ class ProductController extends Controller
         }
     }
 
-        public function statusUpdate(Request $request)
+    public function statusUpdate(Request $request)
     {
 
         $request->validate([
@@ -61,5 +61,4 @@ class ProductController extends Controller
             return $this->error('Failed to retrieve product: ' . $e->getMessage(), 500);
         }
     }
-
 }

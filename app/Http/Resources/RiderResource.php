@@ -57,6 +57,8 @@ class RiderResource extends JsonResource
 
             'current_assigned_orders' => $this->pending_orders_count ?? 0,
             'order' => OrderResource::collection($this->whenLoaded('orders')),
+            'type' => "Rider",
+
 
         ];
     }
