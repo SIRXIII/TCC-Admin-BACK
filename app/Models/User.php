@@ -31,6 +31,7 @@ class User extends Authenticatable
         'profile_photo',
         'email',
         'password',
+        'type',
         'two_factor_method',
         'two_factor_secret',
         'two_factor_email_code',

@@ -44,13 +44,13 @@ return [
     'apple' => [
         'client_id' => env('APPLE_CLIENT_ID'),
         'client_secret' => env('APPLE_CLIENT_SECRET'),
-        'redirect' => env('APPLE_REDIRECT_URI'),
+        'redirect' => env('APPLE_REDIRECT_URI', env('APP_URL', 'https://travelclothingclub-admin.online') . '/api/social/apple/callback'),
     ],
 
     'shopify' => [
         'client_id' => env('SHOPIFY_CLIENT_ID'),
         'client_secret' => env('SHOPIFY_CLIENT_SECRET'),
-        'redirect' => env('SHOPIFY_REDIRECT_URI'),
+        'redirect' => env('SHOPIFY_REDIRECT_URI', env('APP_URL', 'https://travelclothingclub-admin.online') . '/api/social/shopify/callback'),
     ],
 
 ];

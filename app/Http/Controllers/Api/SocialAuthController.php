@@ -36,18 +36,6 @@ class SocialAuthController extends Controller
         $this->validateProvider($provider);
 
         try {
-            // Verify state parameter if provided
-            if ($request->has('state')) {
-                $stateData = Cache::get("social_state_{$request->state}");
-                if (!$stateData || $stateData['provider'] !== $provider) {
-                    // Redirect to login with error for web requests
-                    $frontendUrl = 'https://travelclothingclub-admin.online';
-                    return redirect()->away("{$frontendUrl}/login?error=invalid_state");
-                }
-                // Clean up used state
-                Cache::forget("social_state_{$request->state}");
-            }
-
             // Get user from provider using stateless mode
             $socialUser = Socialite::driver($provider)->stateless()->user();
             
@@ -55,16 +43,28 @@ class SocialAuthController extends Controller
             $user = $this->findOrCreateUser($socialUser, $provider);
             
             // Generate token
-            $token = $user->createToken('api')->plainTextToken;
+            $token = $user->createToken("{$provider}-login")->plainTextToken;
 
-            // Return JSON response
-            return $this->success([
+            // Return HTML page that will post message to parent window (for popup flow)
+            // or redirect to frontend for direct flow
+            $frontendUrl = env('FRONTEND_URL', 'https://travelclothingclub-admin.online');
+            
+            return response()->view('oauth-callback', [
+                'token' => $token,
                 'user' => new UserResource($user),
-                'token' => $token
-            ], 'Social login successful', 200);
+                'provider' => $provider,
+                'frontendUrl' => $frontendUrl,
+                'success' => true
+            ]);
 
         } catch (\Exception $e) {
-            return $this->error('Social authentication failed', $e->getMessage(), 422);
+            $frontendUrl = env('FRONTEND_URL', 'https://travelclothingclub-admin.online');
+            
+            return response()->view('oauth-callback', [
+                'error' => $e->getMessage(),
+                'frontendUrl' => $frontendUrl,
+                'success' => false
+            ]);
         }
     }
 
@@ -147,6 +147,7 @@ class SocialAuthController extends Controller
                 'provider_token' => $socialUser->token ?? null,
                 'provider_refresh_token' => $socialUser->refreshToken ?? null,
                 'avatar' => $socialUser->getAvatar() ?? $user->avatar,
+                'type' => $user->type ?? 'admin', // Ensure admin type is set
             ]);
             return $user;
         }
@@ -164,6 +165,7 @@ class SocialAuthController extends Controller
                 'provider_token' => $socialUser->token ?? null,
                 'provider_refresh_token' => $socialUser->refreshToken ?? null,
                 'avatar' => $socialUser->getAvatar() ?? $user->avatar,
+                'type' => $user->type ?? 'admin', // Ensure admin type is preserved/set
             ]);
             return $user;
         }
@@ -179,6 +181,7 @@ class SocialAuthController extends Controller
             'provider_refresh_token' => $socialUser->refreshToken ?? null,
             'avatar' => $socialUser->getAvatar(),
             'email_verified_at' => now(), // Social accounts are considered verified
+            'type' => 'admin', // Set admin type for OAuth users in admin panel
         ]);
     }
 
