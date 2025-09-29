@@ -35,6 +35,8 @@ class TravelerResource extends JsonResource
             'total_orders' => $this->orders_count,
             'total_amount_spent' =>  $this->total_amount_spent,
             'order' => OrderResource::collection($this->whenLoaded('orders')),
+            'type' => "Traveler",
+
         ];
     }
 }

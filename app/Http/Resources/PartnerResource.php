@@ -4,6 +4,7 @@ namespace App\Http\Resources;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 class PartnerResource extends JsonResource
@@ -17,7 +18,9 @@ class PartnerResource extends JsonResource
     {
         return [
             'id' => $this->id,
-            'profile_photo' => url($this->profile_photo),
+            'profile_photo' => $this->profile_photo
+                ? Storage::disk('hetzner')->url($this->profile_photo)
+                : null,
             'business_name' => $this->business_name,
             'name' => $this->name,
             'email' => $this->email,
@@ -40,17 +43,22 @@ class PartnerResource extends JsonResource
             'updated_at' => $this->updated_at->toDateTimeString(),
             'products'  => ProductResource::collection($this->whenLoaded('products')),
             'order' => OrderResource::collection($this->whenLoaded('orders')),
+            'type' => "partner",
             'documents' => [
                 'license' => $this->documents()->where('type', 'license')->get()->map(function ($doc) {
                     return [
                         'side' => $doc->side,
-                        'file_path' => url($doc->file_path),
+                        'file_path' => $doc->file_path
+                            ? Storage::disk('hetzner')->url($doc->file_path)
+                            : null,
                     ];
                 }),
                 'owner_id_card' => $this->documents()->where('type', 'owner_id_card')->get()->map(function ($doc) {
                     return [
                         'side' => $doc->side,
-                        'file_path' => $doc->file_path,
+                        'file_path' => $doc->file_path
+                            ? Storage::disk('hetzner')->url($doc->file_path)
+                            : null,
                     ];
                 }),
             ],

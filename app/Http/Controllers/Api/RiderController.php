@@ -62,17 +62,17 @@ class RiderController extends Controller
         $rider->update(['rider_id' => "RID-" . $rider->id]);
 
         if ($request->hasFile('profile_photo')) {
-            $path = $request->file('profile_photo')->store('riders/profile', 'public');
+            $path = $request->file('profile_photo')->store('riders/profile', 'hetzner');
             $rider->update(['profile_photo' => $path]);
         }
 
         if ($request->hasFile('license_front')) {
-            $path = $request->file('license_front')->store('riders/licenses', 'public');
+            $path = $request->file('license_front')->store('riders/licenses', 'hetzner');
             $rider->update(['license_front' => $path]);
         }
 
         if ($request->hasFile('license_back')) {
-            $path = $request->file('license_back')->store('riders/licenses', 'public');
+            $path = $request->file('license_back')->store('riders/licenses', 'hetzner');
             $rider->update(['license_back' => $path]);
         }
 
@@ -173,59 +173,58 @@ class RiderController extends Controller
     }
 
 
-    public function downloadDocuments($riderId)
-    {
-        $rider = Rider::find($riderId);
+public function downloadDocuments($riderId)
+{
+    $rider = Rider::find($riderId);
 
-        if (!$rider) {
-            return response()->json(['error' => 'Rider not found'], 404);
-        }
+    if (!$rider) {
+        return response()->json(['error' => 'Rider not found'], 404);
+    }
 
-        $docs = [];
-        if ($rider->license_front) {
-            $docs[] = $rider->license_front;
-        }
-        if ($rider->license_back) {
-            $docs[] = $rider->license_back;
-        }
+    $docs = [];
+    if ($rider->license_front) {
+        $docs[] = $rider->license_front;
+    }
+    if ($rider->license_back) {
+        $docs[] = $rider->license_back;
+    }
 
-        if (empty($docs)) {
-            return response()->json(['error' => 'No documents found'], 404);
-        }
+    if (empty($docs)) {
+        return response()->json(['error' => 'No documents found'], 404);
+    }
 
-        $zip = new ZipArchive;
-        $zipFileName = "rider_{$riderId}_documents.zip";
-        $zipPath = storage_path("app/temp/{$zipFileName}");
+    $zip = new \ZipArchive;
+    $zipFileName = "rider_{$riderId}_documents.zip";
+    $zipPath = storage_path("app/temp/{$zipFileName}");
 
-        if (!file_exists(dirname($zipPath))) {
-            mkdir(dirname($zipPath), 0777, true);
-        }
+    if (!file_exists(dirname($zipPath))) {
+        mkdir(dirname($zipPath), 0777, true);
+    }
 
-        if ($zip->open($zipPath, ZipArchive::CREATE | ZipArchive::OVERWRITE) === true) {
-            foreach ($docs as $doc) {
-                if (Storage::disk('public')->exists($doc)) {
-                    $filePath = Storage::disk('public')->path($doc);
-                    $zip->addFile($filePath, basename($filePath));
-                } elseif (filter_var($doc, FILTER_VALIDATE_URL)) {
-                    $tmpFile = tempnam(sys_get_temp_dir(), 'rider_doc_');
-                    $fileContent = @file_get_contents($doc);
-                    if ($fileContent !== false) {
-                        file_put_contents($tmpFile, $fileContent);
-                        $zip->addFile($tmpFile, basename(parse_url($doc, PHP_URL_PATH)));
-                    }
+    if ($zip->open($zipPath, \ZipArchive::CREATE | \ZipArchive::OVERWRITE) === true) {
+        foreach ($docs as $doc) {
+            if (Storage::disk('hetzner')->exists($doc)) {
+                $stream = Storage::disk('hetzner')->get($doc);
+                $zip->addFromString(basename($doc), $stream);
+            } elseif (filter_var($doc, FILTER_VALIDATE_URL)) {
+                $fileContent = @file_get_contents($doc);
+                if ($fileContent !== false) {
+                    $zip->addFromString(basename(parse_url($doc, PHP_URL_PATH)), $fileContent);
                 }
             }
-            $zip->close();
-        } else {
-            return response()->json(['error' => 'Could not create zip file'], 500);
         }
-
-        if (!file_exists($zipPath)) {
-            return response()->json(['error' => 'Zip file not created'], 500);
-        }
-
-        return response()->download($zipPath)->deleteFileAfterSend(true);
+        $zip->close();
+    } else {
+        return response()->json(['error' => 'Could not create zip file'], 500);
     }
+
+    if (!file_exists($zipPath)) {
+        return response()->json(['error' => 'Zip file not created'], 500);
+    }
+
+    return response()->download($zipPath)->deleteFileAfterSend(true);
+}
+
 
 
     public function statusUpdate(Request $request)

@@ -5,9 +5,13 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\UserResource;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
+use PragmaRX\Google2FA\Google2FA;
+use Illuminate\Support\Str;
+use SimpleSoftwareIO\QrCode\Facades\QrCode;
+use SimpleSoftwareIO\QrCode\Generator;
+use Laravel\Fortify\TwoFactorAuthenticatable;
 use Laravel\Fortify\TwoFactorAuthenticationProvider;
-use Endroid\QrCode\Builder\Builder;
-use Endroid\QrCode\Writer\SvgWriter;
 
 class UserTwoFactorController extends Controller
 {
@@ -27,23 +31,29 @@ class UserTwoFactorController extends Controller
 
         $recoveryCodes = $user->forceGenerateRecoveryCodes();
 
-        $qrCodeUrl = $provider->qrCodeUrl(config('app.name'), $user->email, $secret);
 
-        // ✅ v6 style
-        $result = Builder::build([
-            'writer' => new SvgWriter(),
-            'data'   => $qrCodeUrl,
-            'size'   => 250,
-        ]);
+        $qr_code_url = $provider->qrCodeUrl(
+            config('app.name'),
+            $user->email,
+            $secret
+        );
 
-        $qrBase64 = 'data:image/svg+xml;base64,' . base64_encode($result->getString());
+        $qrBinary = QrCode::size(250)
+            ->format('svg')
+            ->generate($qr_code_url);
+
+        $qrBase64 = 'data:image/svg+xml;base64,' . base64_encode($qrBinary);
 
         return response()->json([
-            'user'          => new UserResource($user),
-            'message'       => '2FA enabled successfully',
-            'qr_code_url'   => $qrCodeUrl,
-            'qr'            => $qrBase64,
-            'recovery_codes'=> $recoveryCodes,
+            'user' => new UserResource($user),
+            'message' => '2FA enabled successfully',
+            'qr_code_url' => $provider->qrCodeUrl(
+                config('app.name'),
+                $user->email,
+                $secret
+            ),
+            'qr' => $qrBase64,
+            'recovery_codes' => $recoveryCodes,
         ]);
     }
 
@@ -60,8 +70,8 @@ class UserTwoFactorController extends Controller
         ]);
 
         $recoveryCode = $request->input('code');
-        $valid = false;
 
+        $valid = false;
         foreach ($user->recoveryCodes() as $code) {
             if (hash_equals($code, $recoveryCode)) {
                 $valid = true;
@@ -73,29 +83,36 @@ class UserTwoFactorController extends Controller
             return response()->json(['message' => 'Invalid recovery code'], 403);
         }
 
+
         $secret = decrypt($user->two_factor_secret);
-        $qrCodeUrl = $provider->qrCodeUrl(config('app.name'), $user->email, $secret);
 
-        // ✅ v6 style
-        $result = Builder::build([
-            'writer' => new SvgWriter(),
-            'data'   => $qrCodeUrl,
-            'size'   => 250,
-        ]);
+        $qr_code_url = $provider->qrCodeUrl(
+            config('app.name'),
+            $user->email,
+            $secret
+        );
 
-        $qrBase64 = 'data:image/svg+xml;base64,' . base64_encode($result->getString());
+        $qrBinary = QrCode::size(250)
+            ->format('svg')
+            ->generate($qr_code_url);
+
+        $qrBase64 = 'data:image/svg+xml;base64,' . base64_encode($qrBinary);
 
         return response()->json([
-            'user'           => new UserResource($user),
-            'message'        => 'QR regenerated successfully',
-            'qr_code_url'    => $qrCodeUrl,
-            'qr'             => $qrBase64,
+            'user' => new UserResource($user),
+            'message' => 'QR regenerated successfully',
+            'qr_code_url' => $qr_code_url,
+            'qr' => $qrBase64,
             'recovery_codes' => $user->recoveryCodes(),
         ]);
     }
 
+
+
+
     public function updateTwoFactor(Request $request)
     {
+
         $request->validate([
             'method' => 'nullable|string|in:none,email,totp',
         ]);

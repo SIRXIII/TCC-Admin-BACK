@@ -23,7 +23,7 @@ class User extends Authenticatable
      *
      * @var list<string>
      */
-    protected $fillable = [
+     protected $fillable = [
         'name',
         'first_name',
         'last_name',
@@ -57,7 +57,6 @@ class User extends Authenticatable
         'two_factor_secret',
         'two_factor_email_code',
     ];
-
     /**
      * Get the attributes that should be cast.
      *

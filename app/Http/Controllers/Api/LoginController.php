@@ -43,7 +43,7 @@ class LoginController extends Controller
             return $this->success([
                 'user' => new UserResource($user),
                 'token' => $token,
-             
+
             ], 'Login successful', 200);
         }
 
@@ -85,7 +85,7 @@ class LoginController extends Controller
 
 
         if ($request->hasFile('profile_photo')) {
-            $path = $request->file('profile_photo')->store('profile_images', 'public');
+            $path = $request->file('profile_photo')->store('profile_images', 'hetzner');
             $user->profile_photo = $path;
         }
 

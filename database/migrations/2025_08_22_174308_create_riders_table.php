@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('riders', function (Blueprint $table) {
             $table->id();
             $table->string('profile_photo')->nullable();
-            $table->string('rider_id')->unique();
+            $table->string('rider_id')->unique()->nullable();
             $table->string('first_name')->nullable();
             $table->string('last_name')->nullable();
             $table->string('phone')->nullable();

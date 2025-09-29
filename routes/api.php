@@ -4,16 +4,17 @@ use App\Http\Controllers\Api\Auth\LoginController as AuthLoginController;
 use App\Http\Controllers\Api\Auth\PartnerAuthController;
 use App\Http\Controllers\Api\DashboardController;
 use App\Http\Controllers\Api\LoginController;
+use App\Http\Controllers\Api\NotificationController;
 use App\Http\Controllers\Api\OrderController;
 use App\Http\Controllers\Api\PartnerController;
 use App\Http\Controllers\Api\ProductController;
 use App\Http\Controllers\Api\RatingController;
 use App\Http\Controllers\Api\RefundController;
 use App\Http\Controllers\Api\RiderController;
+use App\Http\Controllers\Api\SocialAuthController;
 use App\Http\Controllers\Api\SupportTicketController;
 use App\Http\Controllers\Api\TravelerController;
 use App\Http\Controllers\Api\UserTwoFactorController;
-use App\Http\Controllers\Api\SocialAuthController;
 use App\Http\Controllers\SupportMessageController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -34,6 +35,7 @@ Route::get('/social/{provider}/redirect', [SocialAuthController::class, 'redirec
 Route::get('/social/{provider}/callback', [SocialAuthController::class, 'handleProviderCallback']);
 Route::post('/social/{provider}/token', [SocialAuthController::class, 'loginWithToken']);
 
+
 Route::middleware('auth:sanctum')->group(function () {
     // Get authenticated user
     Route::get('/user', function (Request $request) {
@@ -46,11 +48,9 @@ Route::middleware('auth:sanctum')->group(function () {
     
     Route::post('/2fa/generate-totp', [UserTwoFactorController::class, 'generateTotp']);
     Route::post('/2fa/verify-recovery', [UserTwoFactorController::class, 'regenerateTotpQr']);
-    // Route::post('/2fa/totp/confirm', [UserTwoFactorController::class, 'confirmTotp']);
-    // Route::post('/2fa/email/enable', [UserTwoFactorController::class, 'enableEmail']);
     Route::post('/2fa/update', [UserTwoFactorController::class, 'updateTwoFactor']);
-    
-    // Social Authentication (Authenticated Routes)
+
+     // Social Authentication (Authenticated Routes)
     Route::post('/social/unlink', [SocialAuthController::class, 'unlinkSocialAccount']);
 });
 
@@ -132,4 +132,11 @@ Route::prefix('partner')->group(function () {
         Route::get('/refunds', [RefundController::class, 'index']);
         Route::get('/support-tickets', [SupportTicketController::class, 'index']);
     });
+});
+
+
+Route::middleware('auth:sanctum')->group(function () {
+    Route::get('/notifications', [NotificationController::class, 'index']);
+    Route::post('/notifications/read-all', [NotificationController::class, 'markAllAsRead']);
+    Route::post('/notifications/{id}/read', [NotificationController::class, 'markAsRead']);
 });

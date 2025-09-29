@@ -20,6 +20,35 @@ class SocialAuthController extends Controller
     /**
      * Redirect to OAuth provider
      */
+    // public function redirectToProvider($provider, Request $request)
+    // {
+    //     $this->validateProvider($provider);
+
+    //     try {
+    //         // Generate a state parameter for security
+    //         $state = Str::random(40);
+
+    //         // Store state in cache for verification (expires in 10 minutes)
+    //         Cache::put("social_state_{$state}", [
+    //             'provider' => $provider,
+    //             'created_at' => now()
+    //         ], now()->addMinutes(10));
+
+    //         // Use stateless mode for API with custom state
+    //         $redirectUrl = Socialite::driver($provider)
+    //             ->stateless()
+    //             ->with(['state' => $state])
+    //             ->redirect()
+    //             ->getTargetUrl();
+
+    //         return $this->success([
+    //             'redirect_url' => $redirectUrl,
+    //             'state' => $state
+    //         ], "Redirect to {$provider} authentication", 200);
+    //     } catch (\Exception $e) {
+    //         return $this->error("Failed to redirect to {$provider}", $e->getMessage(), 500);
+    //     }
+    // }
     public function redirectToProvider($provider, Request $request)
     {
         $this->validateProvider($provider);
@@ -49,6 +78,8 @@ class SocialAuthController extends Controller
             return $this->error("Failed to redirect to {$provider}", $e->getMessage(), 500);
         }
     }
+}
+
 
     /**
      * Handle social provider callback
@@ -106,8 +137,7 @@ class SocialAuthController extends Controller
         try {
             // Get user from provider
             $socialUser = Socialite::driver($provider)->stateless()->user();
-            
-            // Find or create user
+
             $user = $this->findOrCreateUser($socialUser, $provider);
             
             // Generate token
@@ -137,10 +167,10 @@ class SocialAuthController extends Controller
         try {
             // Get user from provider using access token
             $socialUser = Socialite::driver($provider)->userFromToken($request->access_token);
-            
+
             // Find or create user
             $user = $this->findOrCreateUser($socialUser, $provider);
-            
+
             // Generate token
             $token = $user->createToken('api')->plainTextToken;
 
@@ -253,7 +283,7 @@ class SocialAuthController extends Controller
         }
 
         $nameParts = explode(' ', trim($fullName));
-        
+
         if (count($nameParts) === 1) {
             return [
                 'first_name' => $nameParts[0],
@@ -276,7 +306,7 @@ class SocialAuthController extends Controller
     private function validateProvider($provider)
     {
         $allowedProviders = ['google', 'apple', 'shopify'];
-        
+
         if (!in_array($provider, $allowedProviders)) {
             abort(422, 'Invalid social provider');
         }

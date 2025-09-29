@@ -53,4 +53,6 @@ return [
         'redirect' => env('SHOPIFY_REDIRECT_URI', env('APP_URL', 'https://travelclothingclub-admin.online') . '/api/social/shopify/callback'),
     ],
 
+    
+
 ];
