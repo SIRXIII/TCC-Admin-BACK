@@ -4,6 +4,7 @@ namespace App\Http\Resources;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 class RiderResource extends JsonResource
@@ -25,11 +26,14 @@ class RiderResource extends JsonResource
             'email' => $this->email,
             'address' => $this->address,
 
-            'profile_photo' => $this->profile_photo ? url($this->profile_photo) : null,
+            // 'profile_photo' => $this->profile_photo ? url($this->profile_photo) : null,
+            'profile_photo' => $this->profile_photo
+                ? Storage::disk('hetzner')->url($this->profile_photo)
+                : null,
             'license_status' => $this->license_status,
             'documents' => [
-                'license_front' => $this->license_front ? url($this->license_front) : null,
-                'license_back' => $this->license_back ? url($this->license_back) : null,
+                'license_front' => $this->license_front ? Storage::disk('hetzner')->url($this->license_front) : null,
+                'license_back' => $this->license_back ? Storage::disk('hetzner')->url($this->license_back) : null,
             ],
 
             'license_plate' => $this->license_plate,
