@@ -104,11 +104,11 @@ class SocialAuthController extends Controller
             $token = $user->createToken('google-login')->plainTextToken;
 
             // Redirect to frontend with token
-            $frontendUrl = env('FRONTEND_URL', 'https://travelclothingclub-admin.online');
+            $frontendUrl = env('APP_URL', 'https://travelclothingclub-admin.online');
             return redirect("{$frontendUrl}/oauth/callback?token={$token}");
 
         } catch (\Exception $e) {
-            $frontendUrl = env('FRONTEND_URL', 'https://travelclothingclub-admin.online');
+            $frontendUrl = env('APP_URL', 'https://travelclothingclub-admin.online');
             return redirect("{$frontendUrl}/login?error=" . urlencode($e->getMessage()));
         }
     }
