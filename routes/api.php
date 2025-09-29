@@ -35,6 +35,15 @@ Route::get('/social/{provider}/callback', [SocialAuthController::class, 'handleP
 Route::post('/social/{provider}/token', [SocialAuthController::class, 'loginWithToken']);
 
 Route::middleware('auth:sanctum')->group(function () {
+    // Get authenticated user
+    Route::get('/user', function (Request $request) {
+        return response()->json([
+            'success' => true,
+            'data' => $request->user(),
+            'message' => 'User data retrieved successfully'
+        ]);
+    });
+    
     Route::post('/2fa/generate-totp', [UserTwoFactorController::class, 'generateTotp']);
     Route::post('/2fa/verify-recovery', [UserTwoFactorController::class, 'regenerateTotpQr']);
     // Route::post('/2fa/totp/confirm', [UserTwoFactorController::class, 'confirmTotp']);

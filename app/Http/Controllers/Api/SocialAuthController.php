@@ -69,46 +69,28 @@ class SocialAuthController extends Controller
     }
 
     /**
-     * Handle Google OAuth callback (simplified)
+     * Handle OAuth callback (for web redirects)
      */
-    public function callback()
+    public function callback(Request $request, $provider = 'google')
     {
+        $this->validateProvider($provider);
+
         try {
-            // Get user from Google
-            $googleUser = Socialite::driver('google')->stateless()->user();
+            // Get user from provider
+            $socialUser = Socialite::driver($provider)->stateless()->user();
             
             // Find or create user
-            $user = User::firstOrCreate(
-                ['email' => $googleUser->getEmail()],
-                [
-                    'first_name' => $this->getFirstName($googleUser->getName()),
-                    'last_name' => $this->getLastName($googleUser->getName()),
-                    'avatar' => $googleUser->getAvatar(),
-                    'provider' => 'google',
-                    'provider_id' => $googleUser->getId(),
-                    'email_verified_at' => now(),
-                    'password' => bcrypt(Str::random(32)),
-                ]
-            );
-
-            // Update existing user with Google info if needed
-            if ($user->wasRecentlyCreated === false) {
-                $user->update([
-                    'provider' => 'google',
-                    'provider_id' => $googleUser->getId(),
-                    'avatar' => $googleUser->getAvatar(),
-                ]);
-            }
+            $user = $this->findOrCreateUser($socialUser, $provider);
             
             // Generate token
-            $token = $user->createToken('google-login')->plainTextToken;
+            $token = $user->createToken("{$provider}-login")->plainTextToken;
 
-            // Redirect to frontend with token
-            $frontendUrl = env('APP_URL', 'https://travelclothingclub-admin.online');
-            return redirect("{$frontendUrl}/oauth/callback?token={$token}");
+            // Redirect to frontend with token and success status
+            $frontendUrl = env('FRONTEND_URL', 'https://travelclothingclub-admin.online');
+            return redirect("{$frontendUrl}/oauth/callback?token={$token}&login=success&provider={$provider}");
 
         } catch (\Exception $e) {
-            $frontendUrl = env('APP_URL', 'https://travelclothingclub-admin.online');
+            $frontendUrl = env('FRONTEND_URL', 'https://travelclothingclub-admin.online');
             return redirect("{$frontendUrl}/login?error=" . urlencode($e->getMessage()));
         }
     }
