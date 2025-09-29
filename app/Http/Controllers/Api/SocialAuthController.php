@@ -128,14 +128,19 @@ class SocialAuthController extends Controller
      */
     private function findOrCreateUser($socialUser, $provider)
     {
+        // Parse name from social user
+        $nameData = $this->parseUserName($socialUser->getName());
+        
         // First, try to find user by provider and provider_id
         $user = User::where('provider', $provider)
                    ->where('provider_id', $socialUser->getId())
                    ->first();
 
         if ($user) {
-            // Update user info
+            // Update user info including name fields
             $user->update([
+                'first_name' => $nameData['first_name'],
+                'last_name' => $nameData['last_name'],
                 'provider_token' => $socialUser->token ?? null,
                 'provider_refresh_token' => $socialUser->refreshToken ?? null,
                 'avatar' => $socialUser->getAvatar() ?? $user->avatar,
@@ -147,8 +152,10 @@ class SocialAuthController extends Controller
         $user = User::where('email', $socialUser->getEmail())->first();
 
         if ($user) {
-            // Link social account to existing user
+            // Link social account to existing user and update name fields
             $user->update([
+                'first_name' => $nameData['first_name'],
+                'last_name' => $nameData['last_name'],
                 'provider' => $provider,
                 'provider_id' => $socialUser->getId(),
                 'provider_token' => $socialUser->token ?? null,
@@ -160,7 +167,8 @@ class SocialAuthController extends Controller
 
         // Create new user
         return User::create([
-            'first_name' => $socialUser->getName() ?? 'Social User',
+            'first_name' => $nameData['first_name'],
+            'last_name' => $nameData['last_name'],
             'email' => $socialUser->getEmail(),
             'provider' => $provider,
             'provider_id' => $socialUser->getId(),
@@ -169,6 +177,36 @@ class SocialAuthController extends Controller
             'avatar' => $socialUser->getAvatar(),
             'email_verified_at' => now(), // Social accounts are considered verified
         ]);
+    }
+
+    /**
+     * Parse user name into first name, last name, and full name
+     */
+    private function parseUserName($fullName)
+    {
+        if (empty($fullName)) {
+            return [
+                'first_name' => 'Social',
+                'last_name' => 'User'
+            ];
+        }
+
+        $nameParts = explode(' ', trim($fullName));
+        
+        if (count($nameParts) === 1) {
+            return [
+                'first_name' => $nameParts[0],
+                'last_name' => ''
+            ];
+        }
+
+        $firstName = $nameParts[0];
+        $lastName = implode(' ', array_slice($nameParts, 1));
+
+        return [
+            'first_name' => $firstName,
+            'last_name' => $lastName
+        ];
     }
 
     /**
