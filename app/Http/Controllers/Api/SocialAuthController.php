@@ -78,8 +78,6 @@ class SocialAuthController extends Controller
             return $this->error("Failed to redirect to {$provider}", $e->getMessage(), 500);
         }
     }
-}
-
 
     /**
      * Handle social provider callback
