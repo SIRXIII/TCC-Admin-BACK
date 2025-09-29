@@ -19,7 +19,7 @@ class SocialAuthController extends Controller
     /**
      * Redirect to Google OAuth
      */
-    public function redirect()
+    public function redirectToProvider()
     {
         try {
             return Socialite::driver('google')->stateless()->redirect();
