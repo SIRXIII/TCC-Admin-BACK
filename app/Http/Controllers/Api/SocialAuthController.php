@@ -17,35 +17,14 @@ class SocialAuthController extends Controller
     use ApiResponse;
 
     /**
-     * Redirect to social provider
+     * Redirect to Google OAuth
      */
-    public function redirectToProvider($provider, Request $request)
+    public function redirect()
     {
-        $this->validateProvider($provider);
-
         try {
-            // Generate a state parameter for security
-            $state = Str::random(40);
-            
-            // Store state in cache for verification (expires in 10 minutes)
-            Cache::put("social_state_{$state}", [
-                'provider' => $provider,
-                'created_at' => now()
-            ], now()->addMinutes(10));
-
-            // Use stateless mode for API with custom state
-            $redirectUrl = Socialite::driver($provider)
-                ->stateless()
-                ->with(['state' => $state])
-                ->redirect()
-                ->getTargetUrl();
-            
-            return $this->success([
-                'redirect_url' => $redirectUrl,
-                'state' => $state
-            ], "Redirect to {$provider} authentication", 200);
+            return Socialite::driver('google')->stateless()->redirect();
         } catch (\Exception $e) {
-            return $this->error("Failed to redirect to {$provider}", $e->getMessage(), 500);
+            return $this->error("Failed to redirect to Google", $e->getMessage(), 500);
         }
     }
 
@@ -86,6 +65,51 @@ class SocialAuthController extends Controller
 
         } catch (\Exception $e) {
             return $this->error('Social authentication failed', $e->getMessage(), 422);
+        }
+    }
+
+    /**
+     * Handle Google OAuth callback (simplified)
+     */
+    public function callback()
+    {
+        try {
+            // Get user from Google
+            $googleUser = Socialite::driver('google')->stateless()->user();
+            
+            // Find or create user
+            $user = User::firstOrCreate(
+                ['email' => $googleUser->getEmail()],
+                [
+                    'first_name' => $this->getFirstName($googleUser->getName()),
+                    'last_name' => $this->getLastName($googleUser->getName()),
+                    'avatar' => $googleUser->getAvatar(),
+                    'provider' => 'google',
+                    'provider_id' => $googleUser->getId(),
+                    'email_verified_at' => now(),
+                    'password' => bcrypt(Str::random(32)),
+                ]
+            );
+
+            // Update existing user with Google info if needed
+            if ($user->wasRecentlyCreated === false) {
+                $user->update([
+                    'provider' => 'google',
+                    'provider_id' => $googleUser->getId(),
+                    'avatar' => $googleUser->getAvatar(),
+                ]);
+            }
+            
+            // Generate token
+            $token = $user->createToken('google-login')->plainTextToken;
+
+            // Redirect to frontend with token
+            $frontendUrl = env('FRONTEND_URL', 'https://travelclothingclub-admin.online');
+            return redirect("{$frontendUrl}/oauth/callback?token={$token}");
+
+        } catch (\Exception $e) {
+            $frontendUrl = env('FRONTEND_URL', 'https://travelclothingclub-admin.online');
+            return redirect("{$frontendUrl}/login?error=" . urlencode($e->getMessage()));
         }
     }
 
@@ -174,6 +198,27 @@ class SocialAuthController extends Controller
             'avatar' => $socialUser->getAvatar(),
             'email_verified_at' => now(), // Social accounts are considered verified
         ]);
+    }
+
+    /**
+     * Get first name from full name
+     */
+    private function getFirstName($fullName)
+    {
+        if (empty($fullName)) return 'Social';
+        $nameParts = explode(' ', trim($fullName));
+        return $nameParts[0];
+    }
+
+    /**
+     * Get last name from full name
+     */
+    private function getLastName($fullName)
+    {
+        if (empty($fullName)) return 'User';
+        $nameParts = explode(' ', trim($fullName));
+        if (count($nameParts) === 1) return '';
+        return implode(' ', array_slice($nameParts, 1));
     }
 
     /**
