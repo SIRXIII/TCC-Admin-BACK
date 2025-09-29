@@ -78,17 +78,14 @@ class SocialAuthController extends Controller
             // Generate token
             $token = $user->createToken('api')->plainTextToken;
 
-            // Always redirect to frontend dashboard for web OAuth flow
-            $frontendUrl = 'https://travelclothingclub-admin.online';
-            $redirectUrl = "{$frontendUrl}/dashboard?token={$token}&login=success&provider={$provider}";
-            
-            return redirect()->away($redirectUrl);
+            // Return JSON response
+            return $this->success([
+                'user' => new UserResource($user),
+                'token' => $token
+            ], 'Social login successful', 200);
 
         } catch (\Exception $e) {
-            // Redirect to login with error
-            $frontendUrl = 'https://travelclothingclub-admin.online';
-            $errorMessage = urlencode($e->getMessage());
-            return redirect()->away("{$frontendUrl}/login?error=social_auth_failed&message={$errorMessage}");
+            return $this->error('Social authentication failed', $e->getMessage(), 422);
         }
     }
 
