@@ -160,7 +160,7 @@ class SocialAuthController extends Controller
 
         // Create new user
         return User::create([
-            'name' => $socialUser->getName() ?? 'Social User',
+            'first_name' => $socialUser->getName() ?? 'Social User',
             'email' => $socialUser->getEmail(),
             'provider' => $provider,
             'provider_id' => $socialUser->getId(),
