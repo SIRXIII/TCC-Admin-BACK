@@ -19,35 +19,65 @@ class SocialAuthController extends Controller
     /**
      * Redirect to social provider
      */
+    // public function redirectToProvider($provider, Request $request)
+    // {
+    //     $this->validateProvider($provider);
+
+    //     try {
+    //         // Generate a state parameter for security
+    //         $state = Str::random(40);
+
+    //         // Store state in cache for verification (expires in 10 minutes)
+    //         Cache::put("social_state_{$state}", [
+    //             'provider' => $provider,
+    //             'created_at' => now()
+    //         ], now()->addMinutes(10));
+
+    //         // Use stateless mode for API with custom state
+    //         $redirectUrl = Socialite::driver($provider)
+    //             ->stateless()
+    //             ->with(['state' => $state])
+    //             ->redirect()
+    //             ->getTargetUrl();
+
+    //         return $this->success([
+    //             'redirect_url' => $redirectUrl,
+    //             'state' => $state
+    //         ], "Redirect to {$provider} authentication", 200);
+    //     } catch (\Exception $e) {
+    //         return $this->error("Failed to redirect to {$provider}", $e->getMessage(), 500);
+    //     }
+    // }
     public function redirectToProvider($provider, Request $request)
-    {
-        $this->validateProvider($provider);
+{
+    $this->validateProvider($provider);
 
-        try {
-            // Generate a state parameter for security
-            $state = Str::random(40);
+    try {
+        $state = Str::random(40);
 
-            // Store state in cache for verification (expires in 10 minutes)
-            Cache::put("social_state_{$state}", [
-                'provider' => $provider,
-                'created_at' => now()
-            ], now()->addMinutes(10));
+        Cache::put("social_state_{$state}", [
+            'provider' => $provider,
+            'created_at' => now()
+        ], now()->addMinutes(10));
 
-            // Use stateless mode for API with custom state
-            $redirectUrl = Socialite::driver($provider)
-                ->stateless()
-                ->with(['state' => $state])
-                ->redirect()
-                ->getTargetUrl();
+        // Force Socialite to use SPA redirect instead of API
+        $redirectUrl = Socialite::driver($provider)
+            ->stateless()
+            ->with(['state' => $state])
+            ->redirectUrl(config('app.spa_url') . '/oauth/callback') 
+            ->redirect()
+            ->getTargetUrl();
 
-            return $this->success([
-                'redirect_url' => $redirectUrl,
-                'state' => $state
-            ], "Redirect to {$provider} authentication", 200);
-        } catch (\Exception $e) {
-            return $this->error("Failed to redirect to {$provider}", $e->getMessage(), 500);
-        }
+        return $this->success([
+            'redirect_url' => $redirectUrl,
+            'state' => $state
+        ], "Redirect to {$provider} authentication", 200);
+
+    } catch (\Exception $e) {
+        return $this->error("Failed to redirect to {$provider}", $e->getMessage(), 500);
     }
+}
+
 
     /**
      * Handle social provider callback
@@ -57,30 +87,25 @@ class SocialAuthController extends Controller
         $this->validateProvider($provider);
 
         try {
-            // Verify state parameter if provided
+
             if ($request->has('state')) {
                 $stateData = Cache::get("social_state_{$request->state}");
                 if (!$stateData || $stateData['provider'] !== $provider) {
-                    // Redirect to login with error for web requests
-                    // $frontendUrl = 'https://travelclothingclub-admin.online';
+
                     $frontendUrl = config('app.spa_url');
 
                     return redirect()->away("{$frontendUrl}/login?error=invalid_state");
                 }
-                // Clean up used state
+
                 Cache::forget("social_state_{$request->state}");
             }
 
-            // Get user from provider using stateless mode
             $socialUser = Socialite::driver($provider)->stateless()->user();
 
-            // Find or create user
             $user = $this->findOrCreateUser($socialUser, $provider);
 
-            // Generate token
             $token = $user->createToken('api')->plainTextToken;
 
-            // Return JSON response
             return $this->success([
                 'user' => new UserResource($user),
                 'token' => $token
