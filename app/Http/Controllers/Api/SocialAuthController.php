@@ -61,7 +61,9 @@ class SocialAuthController extends Controller
             if ($request->has('state')) {
                 $stateData = Cache::get("social_state_{$request->state}");
                 if (!$stateData || $stateData['provider'] !== $provider) {
-                    return $this->error("Invalid state parameter", null, 422);
+                    // Redirect to login with error for web requests
+                    $frontendUrl = 'https://travelclothingclub-admin.online';
+                    return redirect()->away("{$frontendUrl}/login?error=invalid_state");
                 }
                 // Clean up used state
                 Cache::forget("social_state_{$request->state}");
@@ -76,13 +78,17 @@ class SocialAuthController extends Controller
             // Generate token
             $token = $user->createToken('api')->plainTextToken;
 
-            return $this->success([
-                'user' => new UserResource($user),
-                'token' => $token,
-            ], 'Social login successful', 200);
+            // Always redirect to frontend dashboard for web OAuth flow
+            $frontendUrl = 'https://travelclothingclub-admin.online';
+            $redirectUrl = "{$frontendUrl}/dashboard?token={$token}&login=success&provider={$provider}";
+            
+            return redirect()->away($redirectUrl);
 
         } catch (\Exception $e) {
-            return $this->error("Social authentication failed", $e->getMessage(), 422);
+            // Redirect to login with error
+            $frontendUrl = 'https://travelclothingclub-admin.online';
+            $errorMessage = urlencode($e->getMessage());
+            return redirect()->away("{$frontendUrl}/login?error=social_auth_failed&message={$errorMessage}");
         }
     }
 
