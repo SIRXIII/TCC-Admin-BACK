@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\UserResource;
 use App\Models\User;
+use App\Services\ShopifyOAuthService;
 use App\Trait\ApiResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -17,14 +18,35 @@ class SocialAuthController extends Controller
     use ApiResponse;
 
     /**
-     * Redirect to Google OAuth
+     * Redirect to OAuth provider
      */
-    public function redirectToProvider()
+    public function redirectToProvider($provider, Request $request)
     {
+        $this->validateProvider($provider);
+        
         try {
-            return Socialite::driver('google')->stateless()->redirect();
+            // Handle Shopify separately
+            if ($provider === 'shopify') {
+                $shop = $request->get('shop');
+                if (!$shop) {
+                    return $this->error("Shop domain is required for Shopify OAuth", null, 422);
+                }
+                
+                // Validate shop domain format
+                if (!preg_match('/^[a-zA-Z0-9-]+\.myshopify\.com$/', $shop)) {
+                    return $this->error("Invalid shop domain format", null, 422);
+                }
+                
+                $shopifyService = new ShopifyOAuthService();
+                $authUrl = $shopifyService->getAuthUrl($shop);
+                return redirect($authUrl);
+            }
+            
+            // Handle other providers (Google, Apple)
+            $driver = Socialite::driver($provider)->stateless();
+            return $driver->redirect();
         } catch (\Exception $e) {
-            return $this->error("Failed to redirect to Google", $e->getMessage(), 500);
+            return $this->error("Failed to redirect to {$provider}", $e->getMessage(), 500);
         }
     }
 
@@ -36,8 +58,14 @@ class SocialAuthController extends Controller
         $this->validateProvider($provider);
 
         try {
-            // Get user from provider using stateless mode
-            $socialUser = Socialite::driver($provider)->stateless()->user();
+            // Handle Shopify separately
+            if ($provider === 'shopify') {
+                $shopifyService = new ShopifyOAuthService();
+                $socialUser = $shopifyService->handleCallback($request);
+            } else {
+                // Handle other providers (Google, Apple)
+                $socialUser = Socialite::driver($provider)->stateless()->user();
+            }
             
             // Find or create user
             $user = $this->findOrCreateUser($socialUser, $provider);
@@ -131,12 +159,18 @@ class SocialAuthController extends Controller
      */
     private function findOrCreateUser($socialUser, $provider)
     {
+        // Handle different provider data structures
+        $email = $provider === 'shopify' ? $socialUser->email : $socialUser->getEmail();
+        $id = $provider === 'shopify' ? $socialUser->id : $socialUser->getId();
+        $name = $provider === 'shopify' ? $socialUser->name : $socialUser->getName();
+        $avatar = $provider === 'shopify' ? $socialUser->avatar : $socialUser->getAvatar();
+        
         // Parse name from social user
-        $nameData = $this->parseUserName($socialUser->getName());
+        $nameData = $this->parseUserName($name);
         
         // First, try to find user by provider and provider_id
         $user = User::where('provider', $provider)
-                   ->where('provider_id', $socialUser->getId())
+                   ->where('provider_id', $id)
                    ->first();
 
         if ($user) {
@@ -146,14 +180,14 @@ class SocialAuthController extends Controller
                 'last_name' => $nameData['last_name'],
                 'provider_token' => $socialUser->token ?? null,
                 'provider_refresh_token' => $socialUser->refreshToken ?? null,
-                'avatar' => $socialUser->getAvatar() ?? $user->avatar,
+                'avatar' => $avatar ?? $user->avatar,
                 'type' => $user->type ?? 'admin', // Ensure admin type is set
             ]);
             return $user;
         }
 
         // Try to find user by email
-        $user = User::where('email', $socialUser->getEmail())->first();
+        $user = User::where('email', $email)->first();
 
         if ($user) {
             // Link social account to existing user and update name fields
@@ -161,10 +195,10 @@ class SocialAuthController extends Controller
                 'first_name' => $nameData['first_name'],
                 'last_name' => $nameData['last_name'],
                 'provider' => $provider,
-                'provider_id' => $socialUser->getId(),
+                'provider_id' => $id,
                 'provider_token' => $socialUser->token ?? null,
                 'provider_refresh_token' => $socialUser->refreshToken ?? null,
-                'avatar' => $socialUser->getAvatar() ?? $user->avatar,
+                'avatar' => $avatar ?? $user->avatar,
                 'type' => $user->type ?? 'admin', // Ensure admin type is preserved/set
             ]);
             return $user;
@@ -174,12 +208,12 @@ class SocialAuthController extends Controller
         return User::create([
             'first_name' => $nameData['first_name'],
             'last_name' => $nameData['last_name'],
-            'email' => $socialUser->getEmail(),
+            'email' => $email,
             'provider' => $provider,
-            'provider_id' => $socialUser->getId(),
+            'provider_id' => $id,
             'provider_token' => $socialUser->token ?? null,
             'provider_refresh_token' => $socialUser->refreshToken ?? null,
-            'avatar' => $socialUser->getAvatar(),
+            'avatar' => $avatar,
             'email_verified_at' => now(), // Social accounts are considered verified
             'type' => 'admin', // Set admin type for OAuth users in admin panel
         ]);
