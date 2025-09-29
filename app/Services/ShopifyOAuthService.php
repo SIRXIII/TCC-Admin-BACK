@@ -15,9 +15,9 @@ class ShopifyOAuthService
 
     public function __construct()
     {
-        $this->clientId = config('services.shopify.client_id');
+        $this->clientId = config('services.shopify.client_id', '5e6af2f87d9905d6d5d985dacd23ded6');
         $this->clientSecret = config('services.shopify.client_secret');
-        $this->redirectUri = config('services.shopify.redirect');
+        $this->redirectUri = config('services.shopify.redirect', 'https://travelclothingclub-admin.online/api/social/shopify/callback');
         $this->scopes = 'read_products,read_orders,read_customers';
     }
 
