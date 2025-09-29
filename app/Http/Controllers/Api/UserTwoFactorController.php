@@ -86,20 +86,16 @@ class UserTwoFactorController extends Controller
         $qrBase64 = 'data:image/svg+xml;base64,' . base64_encode($result->getString());
 
         return response()->json([
-            'user' => new UserResource($user),
-            'message' => 'QR regenerated successfully',
-            'qr_code_url' => $qr_code_url,
-            'qr' => $qrBase64,
+            'user'           => new UserResource($user),
+            'message'        => 'QR regenerated successfully',
+            'qr_code_url'    => $qrCodeUrl,
+            'qr'             => $qrBase64,
             'recovery_codes' => $user->recoveryCodes(),
         ]);
     }
 
-
-
-
     public function updateTwoFactor(Request $request)
     {
-
         $request->validate([
             'method' => 'nullable|string|in:none,email,totp',
         ]);
