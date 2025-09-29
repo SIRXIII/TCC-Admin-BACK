@@ -31,7 +31,7 @@ Route::post('/two-factor/verify', [AuthLoginController::class, 'verify']);
 // Social Authentication Routes
 Route::get('/social/providers', [SocialAuthController::class, 'getProviders']);
 Route::get('/social/{provider}/redirect', [SocialAuthController::class, 'redirectToProvider']);
-Route::get('/social/{provider}/callback', [SocialAuthController::class, 'handleProviderCallback']);
+Route::get('/auth/{provider}/callback', [SocialAuthController::class, 'handleProviderCallback']);
 Route::post('/social/{provider}/token', [SocialAuthController::class, 'loginWithToken']);
 
 Route::middleware('auth:sanctum')->group(function () {
