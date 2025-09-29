@@ -53,9 +53,9 @@
         // Handle OAuth callback
         @if($success)
             // Store authentication data
-            const token = @json($token);
-            const user = @json($user);
-            const provider = @json($provider);
+            const token = {!! json_encode($token) !!};
+            const user = {!! json_encode($user) !!};
+            const provider = {!! json_encode($provider) !!};
             
             // If this is opened in a popup, post message to parent
             if (window.opener) {
@@ -67,14 +67,33 @@
                 }, '*');
                 window.close();
             } else {
-                // Direct redirect with URL parameters
-                const frontendUrl = @json($frontendUrl);
-                const redirectUrl = `${frontendUrl}/oauth/callback?token=${encodeURIComponent(token)}&login=success&provider=${provider}`;
-                window.location.href = redirectUrl;
+                try {
+                    // Store token in localStorage and redirect to dashboard
+                    localStorage.setItem('auth_token', token);
+                    localStorage.setItem('auth_user', JSON.stringify(user));
+                    localStorage.setItem('type', user.type || 'admin');
+                    
+                    // Trigger a storage event to notify other tabs/components
+                    window.dispatchEvent(new Event('storage'));
+                    
+                    console.log('OAuth success, redirecting to dashboard...');
+                    
+                    // Add a small delay to ensure localStorage is written
+                    setTimeout(() => {
+                        const frontendUrl = {!! json_encode($frontendUrl) !!};
+                        // Force a full page reload to ensure auth context is updated
+                        window.location.href = `${frontendUrl}/`;
+                    }, 200);
+                } catch (error) {
+                    console.error('Error storing OAuth data:', error);
+                    // Fallback redirect
+                    const frontendUrl = {!! json_encode($frontendUrl) !!};
+                    window.location.href = `${frontendUrl}/login?error=storage_failed`;
+                }
             }
         @else
             // Handle error
-            const error = @json($error ?? 'Authentication failed');
+            const error = {!! json_encode($error ?? 'Authentication failed') !!};
             
             if (window.opener) {
                 window.opener.postMessage({
@@ -84,7 +103,7 @@
                 window.close();
             } else {
                 // Redirect to login with error
-                const frontendUrl = @json($frontendUrl);
+                const frontendUrl = {!! json_encode($frontendUrl) !!};
                 const redirectUrl = `${frontendUrl}/login?error=${encodeURIComponent(error)}`;
                 setTimeout(() => {
                     window.location.href = redirectUrl;

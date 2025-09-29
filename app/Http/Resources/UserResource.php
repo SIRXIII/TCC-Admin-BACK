@@ -21,11 +21,11 @@ class UserResource extends JsonResource
             'last_name' => $this->last_name,
             'email' => $this->email,
             'phone' => $this->phone,
-            'type' => "user",
+            'type' => $this->type ?? "admin",
             'two_factor_method' => $this->two_factor_method,
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
-            'profile_photo' => url($this->profile_photo),
+            'profile_photo' => $this->profile_photo ? url($this->profile_photo) : null,
             'two_factor_secret' => !empty($this->two_factor_secret) ? true : false,
         ];
     }
