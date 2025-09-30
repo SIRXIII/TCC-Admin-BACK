@@ -2,6 +2,7 @@
 
 namespace App\Mail;
 
+use App\Models\User;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
@@ -13,13 +14,16 @@ class TwoFactorOtpMail extends Mailable
 {
     use Queueable, SerializesModels;
 
-     public $code;
+    public $code;
+    public $user;
+    
     /**
      * Create a new message instance.
      */
-    public function __construct($code)
+    public function __construct($code, User $user = null)
     {
         $this->code = $code;
+        $this->user = $user;
     }
 
     /**
@@ -28,7 +32,7 @@ class TwoFactorOtpMail extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Your 2FA code',
+            subject: 'Your Two-Factor Authentication Code - Travel Clothing Club Admin',
         );
     }
 
@@ -38,7 +42,11 @@ class TwoFactorOtpMail extends Mailable
     public function content(): Content
     {
         return new Content(
-            markdown: 'mails.twofactor',
+            view: 'mails.twofactor',
+            with: [
+                'code' => $this->code,
+                'user' => $this->user
+            ]
         );
     }
 
