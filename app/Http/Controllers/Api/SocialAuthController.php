@@ -66,9 +66,13 @@ class SocialAuthController extends Controller
                     return $this->error("Invalid shop domain format", null, 422);
                 }
                 
-                $shopifyService = new ShopifyOAuthService();
-                $authUrl = $shopifyService->getAuthUrl($shop);
-                return redirect($authUrl);
+                try {
+                    $shopifyService = new ShopifyOAuthService();
+                    $authUrl = $shopifyService->getAuthUrl($shop);
+                    return redirect($authUrl);
+                } catch (\Exception $e) {
+                    return $this->error("Shopify OAuth configuration error", $e->getMessage(), 500);
+                }
             }
             
             // Handle other providers (Google, Apple)

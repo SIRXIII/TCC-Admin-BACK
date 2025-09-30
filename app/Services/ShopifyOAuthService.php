@@ -15,10 +15,14 @@ class ShopifyOAuthService
 
     public function __construct()
     {
-        $this->clientId = config('services.shopify.client_id', '5e6af2f87d9905d6d5d985dacd23ded6');
+        $this->clientId = config('services.shopify.client_id');
         $this->clientSecret = config('services.shopify.client_secret');
         $this->redirectUri = config('services.shopify.redirect', 'https://travelclothingclub-admin.online/api/social/shopify/callback');
         $this->scopes = 'read_products,read_orders,read_customers';
+        
+        if (!$this->clientId || !$this->clientSecret) {
+            throw new Exception('Shopify OAuth credentials not configured');
+        }
     }
 
     public function getAuthUrl($shop)
@@ -40,42 +44,64 @@ class ShopifyOAuthService
         $state = $request->get('state');
 
         if (!$shop || !$code) {
-            throw new Exception('Missing required parameters');
+            throw new Exception('Missing required parameters: shop and code are required');
         }
 
-        // Exchange code for access token
-        $response = Http::post("https://{$shop}/admin/oauth/access_token", [
-            'client_id' => $this->clientId,
-            'client_secret' => $this->clientSecret,
-            'code' => $code,
-        ]);
-
-        if (!$response->successful()) {
-            throw new Exception('Failed to exchange code for access token');
+        // Validate shop domain format
+        if (!preg_match('/^[a-zA-Z0-9-]+\.myshopify\.com$/', $shop)) {
+            throw new Exception('Invalid shop domain format');
         }
 
-        $tokenData = $response->json();
-        $accessToken = $tokenData['access_token'];
+        try {
+            // Exchange code for access token
+            $response = Http::timeout(30)->post("https://{$shop}/admin/oauth/access_token", [
+                'client_id' => $this->clientId,
+                'client_secret' => $this->clientSecret,
+                'code' => $code,
+            ]);
 
-        // Get shop information
-        $shopResponse = Http::withHeaders([
-            'X-Shopify-Access-Token' => $accessToken,
-        ])->get("https://{$shop}/admin/api/2023-10/shop.json");
+            if (!$response->successful()) {
+                $errorBody = $response->json();
+                $errorMessage = $errorBody['error_description'] ?? $errorBody['error'] ?? 'Failed to exchange code for access token';
+                throw new Exception("Shopify OAuth error: {$errorMessage}");
+            }
 
-        if (!$shopResponse->successful()) {
-            throw new Exception('Failed to get shop information');
+            $tokenData = $response->json();
+            
+            if (!isset($tokenData['access_token'])) {
+                throw new Exception('No access token received from Shopify');
+            }
+            
+            $accessToken = $tokenData['access_token'];
+
+            // Get shop information
+            $shopResponse = Http::timeout(30)->withHeaders([
+                'X-Shopify-Access-Token' => $accessToken,
+            ])->get("https://{$shop}/admin/api/2023-10/shop.json");
+
+            if (!$shopResponse->successful()) {
+                throw new Exception('Failed to get shop information from Shopify API');
+            }
+
+            $shopResponseData = $shopResponse->json();
+            
+            if (!isset($shopResponseData['shop'])) {
+                throw new Exception('Invalid response from Shopify shop API');
+            }
+            
+            $shopData = $shopResponseData['shop'];
+
+            return (object) [
+                'id' => $shopData['id'],
+                'name' => $shopData['name'] ?? $shopData['shop_owner'] ?? 'Shopify User',
+                'email' => $shopData['email'] ?? $shopData['customer_email'] ?? null,
+                'avatar' => null,
+                'token' => $accessToken,
+                'refreshToken' => null,
+                'shop' => $shop,
+            ];
+        } catch (\Exception $e) {
+            throw new Exception("Shopify authentication failed: " . $e->getMessage());
         }
-
-        $shopData = $shopResponse->json()['shop'];
-
-        return (object) [
-            'id' => $shopData['id'],
-            'name' => $shopData['name'],
-            'email' => $shopData['email'],
-            'avatar' => null,
-            'token' => $accessToken,
-            'refreshToken' => null,
-            'shop' => $shop,
-        ];
     }
 }
