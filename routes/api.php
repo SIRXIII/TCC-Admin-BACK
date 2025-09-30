@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\Auth\LoginController as AuthLoginController;
+use App\Http\Controllers\Api\Auth\ForgotPasswordController;
 use App\Http\Controllers\Api\Auth\PartnerAuthController;
 use App\Http\Controllers\Api\DashboardController;
 use App\Http\Controllers\Api\LoginController;
@@ -28,6 +29,10 @@ use Illuminate\Support\Facades\Route;
 
 Route::post('/login', [AuthLoginController::class, 'login'])->middleware('throttle:6,1');;
 Route::post('/two-factor/verify', [AuthLoginController::class, 'verify']);
+
+// Password Reset Routes
+Route::post('/forgot-password', [ForgotPasswordController::class, 'sendResetLinkEmail'])->middleware('throttle:5,1');
+Route::post('/reset-password', [ForgotPasswordController::class, 'resetPassword'])->middleware('throttle:5,1');
 
 // Social Authentication Routes
 Route::get('/social/providers', [SocialAuthController::class, 'getProviders']);

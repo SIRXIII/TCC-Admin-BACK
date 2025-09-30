@@ -165,10 +165,10 @@ class SocialAuthController extends Controller
         try {
             // Get user from provider using access token
             $socialUser = Socialite::driver($provider)->userFromToken($request->access_token);
-
+            
             // Find or create user
             $user = $this->findOrCreateUser($socialUser, $provider);
-
+            
             // Generate token
             $token = $user->createToken('api')->plainTextToken;
 
@@ -281,7 +281,7 @@ class SocialAuthController extends Controller
         }
 
         $nameParts = explode(' ', trim($fullName));
-
+        
         if (count($nameParts) === 1) {
             return [
                 'first_name' => $nameParts[0],
@@ -304,7 +304,7 @@ class SocialAuthController extends Controller
     private function validateProvider($provider)
     {
         $allowedProviders = ['google', 'apple', 'shopify'];
-
+        
         if (!in_array($provider, $allowedProviders)) {
             abort(422, 'Invalid social provider');
         }
