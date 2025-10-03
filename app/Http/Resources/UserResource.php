@@ -26,7 +26,10 @@ class UserResource extends JsonResource
             'two_factor_method' => $this->two_factor_method,
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
-            'profile_photo' => $this->profile_photo ? url($this->profile_photo) : null,
+            // 'profile_photo' => $this->profile_photo ? url($this->profile_photo) : null,
+             'profile_photo' => $this->profile_photo
+                ? Storage::disk('hetzner')->url($this->profile_photo)
+                : null,
             'two_factor_secret' => !empty($this->two_factor_secret) ? true : false,
         ];
     }

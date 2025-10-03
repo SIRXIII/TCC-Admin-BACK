@@ -106,7 +106,7 @@ class PartnerController extends Controller
 
             'businessName' => "required",
             'email'        => 'required|email|unique:partners,email',
-            'phone'        => 'required',
+            'phone'             => ['required', 'regex:/^[0-9-]{7,20}$/'],
             'ownerName' => "required",
             'days' => "required",
             'storetime'        => 'required',

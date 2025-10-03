@@ -66,12 +66,12 @@ class LoginController extends Controller
     {
 
         $validated = $request->validate([
-            'user_id'       => 'required|exists:users,id',
-            'first_name'     => 'required|string|max:255',
-            'last_name'      => 'nullable|string|max:255',
-            'email'         => 'required|email|unique:users,email,' . $request->user_id,
-            'phone'         => 'nullable|string|max:20',
-            'profile_photo' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+            'user_id'           => 'required|exists:users,id',
+            'first_name'        => 'required|string|max:255',
+            'last_name'         => 'nullable|string|max:255',
+            'email'             => 'required|email|unique:users,email,' . $request->user_id,
+            'phone'             => ['nullable', 'regex:/^[0-9-]{7,20}$/'],
+            'profile_photo'     => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
         ]);
 
 
