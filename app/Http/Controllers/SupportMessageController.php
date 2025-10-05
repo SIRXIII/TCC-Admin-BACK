@@ -42,22 +42,30 @@ class SupportMessageController extends Controller
 
 
 
-    public function store(Request $request)
-    {
+   public function store(Request $request)
+{
+    $user = auth()->user();
+    // $user = auth('sanctum')->user();
 
 
-        $message = SupportMessage::create([
-            'support_ticket_id' => $request->ticket_id,
-            'senderable_id' => auth()->id(),
-            'senderable_type' => get_class(auth()->user()),
-            'message' => $request->message,
-        ]);
+    return response()->json(['user' => 1, 'user_data' => $user]);
 
-        broadcast(new SupportMessageSent($message))->toOthers();
-        //  broadcast(new SupportMessageSent(new SupportMessageResource($message)))->toOthers();
-
-        return $this->success($message, 'Message sent successfully', 201);
+    if (! $user) {
+        return response()->json(['message' => 'Unauthorized'], 401);
     }
+
+    $message = SupportMessage::create([
+        'support_ticket_id' => $request->ticket_id,
+        'senderable_id'    => $user->id,
+        'senderable_type'  => get_class($user),
+        'message'          => $request->message,
+    ]);
+
+    broadcast(new SupportMessageSent($message))->toOthers();
+
+    return $this->success($message, 'Message sent successfully', 201);
+}
+
 
     public function fetchMessages($ticketId)
     {

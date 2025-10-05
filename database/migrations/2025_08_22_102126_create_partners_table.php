@@ -21,7 +21,8 @@ return new class extends Migration
             $table->string('location')->nullable();
             $table->string('address')->nullable();
             $table->string('store_available_days')->nullable();
-            $table->string('store_available_time')->nullable();
+            $table->string('store_available_start_time')->nullable();
+            $table->string('store_available_end_time')->nullable();
             $table->string('tax_id')->nullable();
             $table->string('business_name')->nullable();
             $table->string('username')->nullable();

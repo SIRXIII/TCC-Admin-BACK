@@ -50,7 +50,7 @@ Route::middleware('auth:sanctum')->group(function () {
             'message' => 'User data retrieved successfully'
         ]);
     });
-    
+
     Route::post('/2fa/generate-totp', [UserTwoFactorController::class, 'generateTotp']);
     Route::post('/2fa/verify-recovery', [UserTwoFactorController::class, 'regenerateTotpQr']);
     Route::post('/2fa/update', [UserTwoFactorController::class, 'updateTwoFactor']);

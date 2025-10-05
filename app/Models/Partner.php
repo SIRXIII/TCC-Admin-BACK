@@ -28,7 +28,8 @@ class Partner extends  Authenticatable
         'status',
         'average_rating',
         'store_available_days',
-        'store_available_time',
+        'store_available_start_time',
+        'store_available_end_time',
         'tax_id',
     ];
 

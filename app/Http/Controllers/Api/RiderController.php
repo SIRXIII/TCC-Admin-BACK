@@ -38,7 +38,7 @@ class RiderController extends Controller
         $rules = [
             "first_name" => "required",
             "last_name" => "required",
-            "email" => "required|email|unique:riders,email",
+            "email" => "required|email:rfc,dns|unique:riders,email",
             'phone'             => ['required', 'regex:/^[0-9-]{7,20}$/'],
             "address" => "required",
             "profile_photo" => "nullable|mimes:jpg,jpeg,png|max:2048",
@@ -114,7 +114,7 @@ class RiderController extends Controller
         $rules = [
             "first_name" => "required",
             "last_name" => "required",
-            "email" => "required|email|unique:riders,email," . $rider->id,
+            "email" => "required|email:rfc,dns|unique:riders,email," . $rider->id,
             'phone'             => ['required', 'regex:/^[0-9-]{7,20}$/'],
             "address" => "required",
             "profile_photo" => "nullable|mimes:jpg,jpeg,png|max:2048",
