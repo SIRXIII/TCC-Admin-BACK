@@ -67,7 +67,7 @@ class Partner extends  Authenticatable
 
     public function ownerIdCardDocuments()
     {
-        return $this->documents()->where('type', 'owner_id_card');
+        return $this->documents()->where('type', 'owner_id');
     }
 
     public function getPendingOrdersCountAttribute()

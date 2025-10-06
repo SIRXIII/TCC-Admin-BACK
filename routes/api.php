@@ -86,6 +86,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/partners/status-update', [PartnerController::class, 'statusUpdate']);
     Route::post('/partners/request-information', [PartnerController::class, 'sendEmail']);
     Route::post('/partner/store', [PartnerController::class, 'store']);
+    Route::post('/partner/update/{id}', [PartnerController::class, 'update']);
+
     Route::get('/partners/{id}/documents/download', [PartnerController::class, 'downloadDocuments']);
 
 

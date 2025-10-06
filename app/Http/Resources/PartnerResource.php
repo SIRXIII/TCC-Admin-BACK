@@ -54,7 +54,7 @@ class PartnerResource extends JsonResource
                             : null,
                     ];
                 }),
-                'owner_id_card' => $this->documents()->where('type', 'owner_id_card')->get()->map(function ($doc) {
+                'owner_id_card' => $this->documents()->where('type', 'owner_id')->get()->map(function ($doc) {
                     return [
                         'side' => $doc->side,
                         'file_path' => $doc->file_path

@@ -101,10 +101,69 @@ class RiderController extends Controller
     /**
      * Update the specified resource in storage.
      */
+    // public function update(Request $request, $id)
+    // {
+
+    //     // dd($request->all());
+    //     $rider = Rider::find($id);
+
+    //     if (!$rider) {
+    //         return $this->error('Rider not found', [], 404);
+    //     }
+
+    //     $rules = [
+    //         "first_name" => "required",
+    //         "last_name" => "required",
+    //         "email" => "required|email:rfc,dns|unique:riders,email," . $rider->id,
+    //         'phone'             => ['required', 'regex:/^[0-9-]{7,20}$/'],
+    //         "address" => "required",
+    //         "profile_photo" => "nullable|mimes:jpg,jpeg,png|max:2048",
+    //         "license_front" => "nullable|image|mimes:jpg,jpeg,png|max:2048",
+    //         "license_back" => "nullable|image|mimes:jpg,jpeg,png|max:2048",
+    //         "license_plate" => "required",
+    //         "vehicle_type" => "required",
+    //         "vehicle_name" => "required",
+    //         "assigned_region" => "required",
+    //         "insurance_expire_date" => "required",
+    //     ];
+
+    //     $validator = Validator::make($request->all(), $rules);
+
+    //     if ($validator->fails()) {
+    //         return $this->error('Validation failed', $validator->errors(), 422);
+    //     }
+
+    //     $rider->update($request->except(['profile_photo', 'license_front', 'license_back']));
+
+    //     if ($request->hasFile('profile_photo')) {
+    //         if ($rider->profile_photo && Storage::disk('public')->exists($rider->profile_photo)) {
+    //             Storage::disk('public')->delete($rider->profile_photo);
+    //         }
+    //         $path = $request->file('profile_photo')->store('riders/profile', 'public');
+    //         $rider->update(['profile_photo' => $path]);
+    //     }
+
+    //     if ($request->hasFile('license_front')) {
+    //         if ($rider->license_front && Storage::disk('public')->exists($rider->license_front)) {
+    //             Storage::disk('public')->delete($rider->license_front);
+    //         }
+    //         $path = $request->file('license_front')->store('riders/licenses', 'public');
+    //         $rider->update(['license_front' => $path]);
+    //     }
+
+
+    //     if ($request->hasFile('license_back')) {
+    //         if ($rider->license_back && Storage::disk('public')->exists($rider->license_back)) {
+    //             Storage::disk('public')->delete($rider->license_back);
+    //         }
+    //         $path = $request->file('license_back')->store('riders/licenses', 'public');
+    //         $rider->update(['license_back' => $path]);
+    //     }
+
+    //     return $this->success(null, 'Rider updated successfully', 200);
+    // }
     public function update(Request $request, $id)
     {
-
-        // dd($request->all());
         $rider = Rider::find($id);
 
         if (!$rider) {
@@ -115,11 +174,10 @@ class RiderController extends Controller
             "first_name" => "required",
             "last_name" => "required",
             "email" => "required|email:rfc,dns|unique:riders,email," . $rider->id,
-            'phone'             => ['required', 'regex:/^[0-9-]{7,20}$/'],
+            'phone' => ['required', 'regex:/^[0-9-]{7,20}$/'],
             "address" => "required",
             "profile_photo" => "nullable|mimes:jpg,jpeg,png|max:2048",
-            "license_front" => "nullable|image|mimes:jpg,jpeg,png|max:2048",
-            "license_back" => "nullable|image|mimes:jpg,jpeg,png|max:2048",
+            'licenseImages.*' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
             "license_plate" => "required",
             "vehicle_type" => "required",
             "vehicle_name" => "required",
@@ -136,27 +194,26 @@ class RiderController extends Controller
         $rider->update($request->except(['profile_photo', 'license_front', 'license_back']));
 
         if ($request->hasFile('profile_photo')) {
-            if ($rider->profile_photo && Storage::disk('public')->exists($rider->profile_photo)) {
-                Storage::disk('public')->delete($rider->profile_photo);
+            if ($rider->profile_photo && Storage::disk('hetzner')->exists($rider->profile_photo)) {
+                Storage::disk('hetzner')->delete($rider->profile_photo);
             }
-            $path = $request->file('profile_photo')->store('riders/profile', 'public');
+            $path = $request->file('profile_photo')->store('riders/profile', 'hetzner');
             $rider->update(['profile_photo' => $path]);
         }
 
         if ($request->hasFile('license_front')) {
-            if ($rider->license_front && Storage::disk('public')->exists($rider->license_front)) {
-                Storage::disk('public')->delete($rider->license_front);
+            if ($rider->license_front && Storage::disk('hetzner')->exists($rider->license_front)) {
+                Storage::disk('hetzner')->delete($rider->license_front);
             }
-            $path = $request->file('license_front')->store('riders/licenses', 'public');
+            $path = $request->file('license_front')->store('riders/licenses', 'hetzner');
             $rider->update(['license_front' => $path]);
         }
 
-
         if ($request->hasFile('license_back')) {
-            if ($rider->license_back && Storage::disk('public')->exists($rider->license_back)) {
-                Storage::disk('public')->delete($rider->license_back);
+            if ($rider->license_back && Storage::disk('hetzner')->exists($rider->license_back)) {
+                Storage::disk('hetzner')->delete($rider->license_back);
             }
-            $path = $request->file('license_back')->store('riders/licenses', 'public');
+            $path = $request->file('license_back')->store('riders/licenses', 'hetzner');
             $rider->update(['license_back' => $path]);
         }
 
