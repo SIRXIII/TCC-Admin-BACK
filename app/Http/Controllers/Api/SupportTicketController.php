@@ -20,58 +20,58 @@ class SupportTicketController extends Controller
 
     use ApiResponse;
 
-    // public function index()
-    // {
-    //     $user = auth()->user();
-    //     if (! $user) {
-    //         return response()->json(['message' => 'Unauthorized'], 401);
-    //     }
-
-    //     if ($user instanceof User) {
-    //         $tickets = SupportTicket::with(['order', 'user', 'messages.senderable'])
-    //             ->orderBy('created_at', 'desc')
-    //             ->get();
-
-    //         return $this->success(SupportTicketResource::collection($tickets), 'Support tickets retrieved successfully', 200);
-    //     }
-
-    //     $tickets = SupportTicket::with(['order', 'user', 'messages.senderable'])
-    //         ->where(function ($q) use ($user) {
-    //             $q->where('user_id', $user->id)
-    //                 ->where('user_type', get_class($user));
-
-    //             $q->orWhereHas('order', function ($orderQuery) use ($user) {
-    //                 $class = get_class($user);
-
-    //                 if ($class === \App\Models\Traveler::class) {
-    //                     $orderQuery->where('traveler_id', $user->id);
-    //                 } elseif ($class === \App\Models\Partner::class) {
-    //                     $orderQuery->where('partner_id', $user->id);
-    //                 } elseif ($class === \App\Models\Rider::class) {
-    //                     $orderQuery->where('rider_id', $user->id);
-    //                 }
-    //             });
-    //         })
-    //         ->get();
-
-    //     return $this->success(SupportTicketResource::collection($tickets), 'Support tickets retrieved successfully', 200);
-    // }
-
     public function index()
-{
-   
+    {
+        $user = auth()->user();
+        if (! $user) {
+            return response()->json(['message' => 'Unauthorized'], 401);
+        }
 
-    // Fetch all support tickets with related data
-    $tickets = SupportTicket::with(['order', 'user', 'messages.senderable'])
-        ->orderBy('created_at', 'desc')
-        ->get();
+        if ($user instanceof User) {
+            $tickets = SupportTicket::with(['order', 'user', 'messages.senderable'])
+                ->orderBy('created_at', 'desc')
+                ->get();
 
-    return $this->success(
-        SupportTicketResource::collection($tickets),
-        'Support tickets retrieved successfully',
-        200
-    );
-}
+            return $this->success(SupportTicketResource::collection($tickets), 'Support tickets retrieved successfully', 200);
+        }
+
+        $tickets = SupportTicket::with(['order', 'user', 'messages.senderable'])
+            ->where(function ($q) use ($user) {
+                $q->where('user_id', $user->id)
+                    ->where('user_type', get_class($user));
+
+                $q->orWhereHas('order', function ($orderQuery) use ($user) {
+                    $class = get_class($user);
+
+                    if ($class === \App\Models\Traveler::class) {
+                        $orderQuery->where('traveler_id', $user->id);
+                    } elseif ($class === \App\Models\Partner::class) {
+                        $orderQuery->where('partner_id', $user->id);
+                    } elseif ($class === \App\Models\Rider::class) {
+                        $orderQuery->where('rider_id', $user->id);
+                    }
+                });
+            })
+            ->get();
+
+        return $this->success(SupportTicketResource::collection($tickets), 'Support tickets retrieved successfully', 200);
+    }
+
+//     public function index()
+// {
+
+
+//     // Fetch all support tickets with related data
+//     $tickets = SupportTicket::with(['order', 'user', 'messages.senderable'])
+//         ->orderBy('created_at', 'desc')
+//         ->get();
+
+//     return $this->success(
+//         SupportTicketResource::collection($tickets),
+//         'Support tickets retrieved successfully',
+//         200
+//     );
+// }
 
 
 

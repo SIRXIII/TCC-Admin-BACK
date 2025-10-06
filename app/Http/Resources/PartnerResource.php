@@ -44,7 +44,7 @@ class PartnerResource extends JsonResource
             'updated_at' => $this->updated_at->toDateTimeString(),
             'products'  => ProductResource::collection($this->whenLoaded('products')),
             'order' => OrderResource::collection($this->whenLoaded('orders')),
-            'type' => "partner",
+            'type' => "Partner",
             'documents' => [
                 'license' => $this->documents()->where('type', 'license')->get()->map(function ($doc) {
                     return [

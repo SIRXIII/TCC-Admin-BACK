@@ -48,7 +48,7 @@ class SupportMessageController extends Controller
     // $user = auth('sanctum')->user();
 
 
-    return response()->json(['user' => 1, 'user_data' => $user]);
+    // return response()->json(['user' => 1, 'user_data' => $user]);
 
     if (! $user) {
         return response()->json(['message' => 'Unauthorized'], 401);

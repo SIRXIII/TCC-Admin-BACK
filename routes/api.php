@@ -12,6 +12,7 @@ use App\Http\Controllers\Api\ProductController;
 use App\Http\Controllers\Api\RatingController;
 use App\Http\Controllers\Api\RefundController;
 use App\Http\Controllers\Api\RiderController;
+use App\Http\Controllers\Api\SearchController;
 use App\Http\Controllers\Api\SocialAuthController;
 use App\Http\Controllers\Api\SupportTicketController;
 use App\Http\Controllers\Api\TravelerController;
@@ -124,6 +125,12 @@ Route::middleware('auth:sanctum')->group(function () {
 
      Route::post('/profile/update', [LoginController::class, 'updateProfile']);
     Route::post('/user/update-password', [LoginController::class, 'updatePassword']);
+
+
+
+    // routes/api.php
+Route::get('/search', [SearchController::class, 'index']);
+
 });
 
 
