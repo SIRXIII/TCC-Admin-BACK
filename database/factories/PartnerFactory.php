@@ -19,18 +19,30 @@ class PartnerFactory extends Factory
 {
     $days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 
-    // Generate random availability
-    $availability = [];
-    foreach ($days as $day) {
-        $checked = $this->faker->boolean(50); // 50% chance store is open that day
-        $startTime = $checked ? $this->faker->numberBetween(8, 11) . ':00' : '';
-        $endTime = $checked ? $this->faker->numberBetween(12, 20) . ':00' : '';
-        $availability[$day] = [
-            'checked' => $checked,
-            'start_time' => $startTime,
-            'end_time' => $endTime,
-        ];
+ // Generate random availability
+$availability = [];
+foreach ($days as $day) {
+    $checked = $this->faker->boolean(50);
+    if ($checked) {
+        $startHour = $this->faker->numberBetween(1, 11);
+        $endHour = $this->faker->numberBetween(12, 8);
+
+        $startPeriod = $this->faker->randomElement(['AM', 'PM']);
+        $endPeriod = $this->faker->randomElement(['AM', 'PM']);
+
+        $startTime = sprintf('%02d:00 %s', $startHour, $startPeriod);
+        $endTime = sprintf('%02d:00 %s', $this->faker->numberBetween($startHour + 1, 12), $endPeriod);
+    } else {
+        $startTime = '';
+        $endTime = '';
     }
+
+    $availability[$day] = [
+        'checked' => $checked,
+        'start_time' => $startTime,
+        'end_time' => $endTime,
+    ];
+}
 
     return [
         'profile_photo' => $this->faker->imageUrl(200, 200, 'business'),
