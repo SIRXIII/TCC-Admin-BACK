@@ -25,6 +25,8 @@ class RiderResource extends JsonResource
             'phone' => $this->phone,
             'email' => $this->email,
             'address' => $this->address,
+             'latitude' => $this->latitude,
+            'longitude' => $this->longitude,
 
             // 'profile_photo' => $this->profile_photo ? url($this->profile_photo) : null,
             'profile_photo' => $this->profile_photo

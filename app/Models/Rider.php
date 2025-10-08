@@ -17,6 +17,8 @@ class Rider extends Model
         'phone',
         'email',
         'address',
+        'latitude',
+        'longitude',
         'availability_status',
         'status',
         'delivered_orders',

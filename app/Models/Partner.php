@@ -27,11 +27,16 @@ class Partner extends  Authenticatable
         'password',
         'status',
         'average_rating',
-        'store_available_days',
-        'store_available_start_time',
-        'store_available_end_time',
+        'availability',
+        'latitude',
+        'longitude',
         'tax_id',
     ];
+
+    protected $casts = [
+    'availability' => 'array', 
+];
+
 
     protected $hidden = ['password'];
 

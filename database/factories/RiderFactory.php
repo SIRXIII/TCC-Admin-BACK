@@ -52,6 +52,8 @@ class RiderFactory extends Factory
         'phone' => $this->faker->phoneNumber(),
         'email' => $this->faker->unique()->safeEmail(),
         'address' => $this->faker->address(),
+         'latitude' => $this->faker->latitude(),
+        'longitude' => $this->faker->longitude(),
         'availability_status' => $this->faker->randomElement(['online', 'offline']),
         'status' => $this->faker->randomElement(['active', 'suspended']),
         'delivered_orders' => $this->faker->numberBetween(0, 100),

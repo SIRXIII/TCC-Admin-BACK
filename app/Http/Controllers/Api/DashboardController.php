@@ -87,4 +87,64 @@ class DashboardController extends Controller
 
         return $this->success(PartnerResource::collection($topPartners), 'Top Partners by sales');
     }
+
+
+    public function latestAlert(Request $request)
+{
+    $user = $request->user();
+
+    $notifications = $user->notifications()
+        ->latest()
+        ->take(3)
+        ->get()
+        ->values() // ensures correct indexing
+        ->map(function ($notification, $index) {
+            // Assign colors based on position
+            switch ($index) {
+                case 0:
+                    $color = 'text-red-500';
+                    $statusColor = 'bg-[#E1FDFD] text-[#3E77B0]';
+                    $descriptionColor = 'text-[#ED6C3C]';
+                    break;
+                case 1:
+                    $color = 'text-yellow-700';
+                    $statusColor = 'bg-[#FEFCDD] text-[#8F802E]';
+                    $descriptionColor = 'text-[#8F802E]';
+                    break;
+                case 2:
+                    $color = 'text-green-700';
+                    $statusColor = 'bg-[#E7F7ED] text-[#088B3A]';
+                    $descriptionColor = 'text-[#8F802E]';
+                    break;
+                default:
+                    $color = 'text-gray-500';
+                    $statusColor = 'bg-gray-100 text-gray-800';
+                    $descriptionColor = 'text-gray-600';
+                    break;
+            }
+
+            $data = $notification->data;
+
+            return [
+                'id' => $notification->id,
+                'label' => ucfirst($data['type']) ?? 'System Alert',
+                'value' => $data['title'] ?? '',
+                'description' => $data['message'] ?? '',
+                'link' => $data['url'] ?? '',
+                'date' => $notification->created_at
+                    ? $notification->created_at->format('M d, Y - h:i A')
+                    : null,
+                'color' => $color,
+                'statusColor' => $statusColor,
+                'descriptionColor' => $descriptionColor,
+            ];
+        });
+
+    return response()->json([
+        'success' => true,
+        'message' => 'Latest alerts',
+        'data' => $notifications,
+    ]);
+}
+
 }

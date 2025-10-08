@@ -24,6 +24,8 @@ class AddressFactory extends Factory
             'name' => $this->faker->name(),
             'address' => $this->faker->streetAddress() . ', ' . $this->faker->city() . ', ' . $this->faker->stateAbbr() . ' ' . $this->faker->postcode(),
             'country' => $this->faker->country(),
+             'latitude' => $this->faker->latitude(),
+        'longitude' => $this->faker->longitude(),
             'phone' => $this->faker->phoneNumber(),
             'created_at' => now(),
             'updated_at' => now(),

@@ -15,36 +15,42 @@ class PartnerFactory extends Factory
      *
      * @return array<string, mixed>
      */
-    public function definition(): array
-    {
-        $days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+   public function definition(): array
+{
+    $days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 
-        $randomDays = $this->faker->randomElements($days, 2);
-        $daysString = implode(' - ', $randomDays);
-
-
-        $startTime = $this->faker->numberBetween(8, 12) . 'am';
-        $endTime = $this->faker->numberBetween(1, 11) . 'pm';
-        $timeString = $startTime . ' - ' . $endTime;
-
-        return [
-            'profile_photo' => $this->faker->imageUrl(200, 200, 'business'),
-            'name' => $this->faker->name(),
-            'business_name' => $this->faker->company(),
-            'email' => $this->faker->unique()->safeEmail(),
-            'phone' => $this->faker->phoneNumber(),
-            'category' => $this->faker->randomElement(['Fashion', 'Electronics', 'Food', 'Health']),
-            'location' => $this->faker->city(),
-            'address' => $this->faker->address(),
-            'store_available_days' => $daysString,
-            'store_available_start_time' => $startTime,
-            'store_available_end_time' => $endTime,
-            'tax_id' => $this->faker->bothify('??######'),
-            'username' => $this->faker->unique()->userName(),
-            'password' => Hash::make('password'),
-            'status' => $this->faker->randomElement(['active', 'suspended', 'pending']),
-            'created_at' => now(),
-            'updated_at' => now(),
+    // Generate random availability
+    $availability = [];
+    foreach ($days as $day) {
+        $checked = $this->faker->boolean(50); // 50% chance store is open that day
+        $startTime = $checked ? $this->faker->numberBetween(8, 11) . ':00' : '';
+        $endTime = $checked ? $this->faker->numberBetween(12, 20) . ':00' : '';
+        $availability[$day] = [
+            'checked' => $checked,
+            'start_time' => $startTime,
+            'end_time' => $endTime,
         ];
     }
+
+    return [
+        'profile_photo' => $this->faker->imageUrl(200, 200, 'business'),
+        'name' => $this->faker->name(),
+        'business_name' => $this->faker->company(),
+        'email' => $this->faker->unique()->safeEmail(),
+        'phone' => $this->faker->phoneNumber(),
+        'category' => $this->faker->randomElement(['Fashion', 'Electronics', 'Food', 'Health']),
+        'address' => $this->faker->address(),
+        'latitude' => $this->faker->latitude(),
+        'longitude' => $this->faker->longitude(),
+        'availability' => json_encode($availability), // store as JSON
+        'tax_id' => $this->faker->bothify('??######'),
+        'username' => $this->faker->unique()->userName(),
+        'password' => Hash::make('password'),
+        'status' => $this->faker->randomElement(['active', 'suspended', 'pending']),
+        'created_at' => now(),
+        'updated_at' => now(),
+    ];
 }
+
+}
+

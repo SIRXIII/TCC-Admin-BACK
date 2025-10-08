@@ -58,6 +58,10 @@ Route::middleware('auth:sanctum')->group(function () {
 
      // Social Authentication (Authenticated Routes)
     Route::post('/social/unlink', [SocialAuthController::class, 'unlinkSocialAccount']);
+
+
+
+    Route::get('/notifications/latest', [DashboardController::class, 'latestAlert']);
 });
 
 

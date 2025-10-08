@@ -106,11 +106,10 @@ class PartnerController extends Controller
             'email'             => 'required|email:rfc,dns|unique:partners,email',
             'phone'             => ['required', 'regex:/^[0-9-]{7,20}$/'],
             'ownerName'         => "required",
-            'days'              => "required",
-            'store_end_time'    => 'required',
-            'store_start_time'  => 'required',
+            'availability'              => "required",
+
             'address'           => "required",
-            'location'          => 'required',
+
             'tax_id'            => 'required|integer',
             'profileImage'      => 'required|image|mimes:jpg,jpeg,png|max:2048',
             'licenseImages.*'   => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
@@ -123,23 +122,7 @@ class PartnerController extends Controller
             return $this->error('validation failed', $validator->errors(), 422);
         }
 
-        $days = $request->days;
 
-        if (is_string($days)) {
-
-            $dayArray = array_map('trim', explode(',', $days));
-
-            $dayArray = array_map('ucfirst', $dayArray);
-
-            if (count($dayArray) === 1) {
-                $daysFormatted = $dayArray[0];
-            } else {
-
-                $daysFormatted = "{$dayArray[0]} - " . end($dayArray);
-            }
-        } else {
-            $daysFormatted = '';
-        }
 
         $partner = Partner::create([
             "name"                => $request->ownerName,
@@ -149,9 +132,9 @@ class PartnerController extends Controller
             "category"            => $request->businesstype,
             "location"            => $request->location,
             "address"             => $request->address,
-            "store_available_days" => $daysFormatted,
-            "store_start_time"    => $request->store_available_start_time,
-            "store_end_time"      => $request->store_available_end_time,
+            "availability" => json_decode($request->availability, true),
+            "latitude"    => $request->latitude,
+            "longitude"      => $request->longitude,
             "tax_id"              => $request->tax_id,
             "status"              => "active",
         ]);
@@ -218,11 +201,10 @@ class PartnerController extends Controller
             'email'             => 'required|email:rfc,dns|unique:partners,email,' . $partner->id,
             'phone'             => ['required', 'regex:/^[0-9-]{7,20}$/'],
             'ownerName'         => "required",
-            'days'              => "required",
-            'store_end_time'    => 'required',
-            'store_start_time'  => 'required',
+            'availability'              => "required",
+
             'address'           => "required",
-            'location'          => 'required',
+
             'tax_id'            => 'required|integer',
             'profileImage'      => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
             'licenseImages.*'   => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
@@ -235,37 +217,6 @@ class PartnerController extends Controller
             return $this->error('Validation failed', $validator->errors(), 422);
         }
 
-        $days = $request->days;
-
-        if (is_array($days)) {
-            
-            $days = implode(',', $days);
-        } elseif (is_object($days)) {
-            $days = json_encode($days);
-        }
-
-        if (is_string($days)) {
-            $days = trim($days);
-
-            $days = str_replace(['[', ']', '"', "'"], '', $days);
-
-            $days = preg_replace('/\s*-\s*/', ',', $days);
-
-            $days = preg_replace('/\s*,\s*/', ',', $days);
-        }
-
-
-        $dayArray = array_filter(array_map('trim', explode(',', $days)));
-        $dayArray = array_map('ucfirst', $dayArray);
-
-
-        if (count($dayArray) === 0) {
-            $daysFormatted = '';
-        } elseif (count($dayArray) === 1) {
-            $daysFormatted = $dayArray[0];
-        } else {
-            $daysFormatted = "{$dayArray[0]} - " . end($dayArray);
-        }
 
 
 
@@ -277,9 +228,9 @@ class PartnerController extends Controller
             "category"            => $request->businesstype,
             "location"            => $request->location,
             "address"             => $request->address,
-            "store_available_days" => $daysFormatted,
-            "store_start_time"    => $request->store_start_time,
-            "store_end_time"      => $request->store_end_time,
+            "availability" => json_decode($request->availability, true),
+            "latitude"    => $request->latitude,
+            "longitude"      => $request->longitude,
             "tax_id"              => $request->tax_id,
             "status"              => "active",
         ]);
